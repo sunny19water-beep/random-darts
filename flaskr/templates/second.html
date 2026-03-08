@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>ランダムダーツ</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='secondstyle.css') }}">
+</head>
+
+<body class="{% if random_number == 'bull' %}bull-mode{% endif %}">
+
+    
+    <div class="content">
+        <h1>
+            このラウンドでは<br>
+            <strong class="{% if random_number == 'bull' %}bull-text{% endif %}">
+                {{ random_number }}
+            </strong>
+            を狙ってください！
+        </h1>
+    </div>
+
+    <div class="bottom-button">
+        <a class="btn btn-primary" href="/next">Next Round</a>
+    </div>
+
+</body>
+</html>

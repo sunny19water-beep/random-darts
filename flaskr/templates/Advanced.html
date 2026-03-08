@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>上級者向けランダムダーツ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='Advance.css') }}">
+</head>
+<body>
+
+
+
+    <div class="content">
+        <h1>
+            このラウンドでは<br>
+            <strong>{{random_number}}</strong>の
+            <strong>
+                {{ bed_number }}
+            </strong>
+            を狙ってください！
+        </h1>
+        
+    </div>
+
+    <div class="bottom-button">
+        <a class="btn btn-primary" href="/Advanced">Next Round</a>
+    </div>
+
+</body>
+</html>

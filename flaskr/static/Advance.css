@@ -1,0 +1,58 @@
+body{
+    margin:0;
+    padding:0;
+    background:#0b0b0b;
+    color:#e5e5e5;
+    font-family:'Orbitron', sans-serif;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+/* メインカード */
+.content{
+    text-align:center;
+    background:#111;
+    padding:60px 80px;
+    border-radius:10px;
+    border:2px solid #c9a227;
+    box-shadow:0 0 30px rgba(201,162,39,0.2);
+}
+
+/* タイトル */
+h1{
+    font-size:34px;
+    font-weight:400;
+    letter-spacing:2px;
+    line-height:1.8;
+}
+
+/* 狙う場所 */
+strong{
+    display:block;
+    font-size:60px;
+    color:#c9a227;
+    margin-top:10px;
+}
+
+/* ボタン */
+.bottom-button{
+    margin-top:50px;
+}
+
+.btn{
+    text-decoration:none;
+    padding:16px 40px;
+    font-size:18px;
+    color:#c9a227;
+    border:2px solid #c9a227;
+    border-radius:6px;
+    transition:0.25s;
+}
+
+.btn:hover{
+    background:#c9a227;
+    color:#0b0b0b;
+}
