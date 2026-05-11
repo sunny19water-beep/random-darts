@@ -3,7 +3,7 @@
 このwebappでできること:
 
 このrandom-dartsはランダムに特定のナンバーを表示し、それを狙うというダーツの練習用webappです。
-
+（現在はhtmlでformは作っている状態ですが、サーバーサイドでデータベースをいじってないのでformが送られない設定になっています。DBを理解してきたらまた実装します)追記　2026 5/11
 
 
 このwebappを作成した理由:
@@ -47,6 +47,8 @@ python(flask),html,css,git(hub),render
 DBの実装、DBを使い成功率や苦手なナンバーの表示
 
 ＵＲＬ:
+
+https://random-darts.onrender.com/
 
 \https://dashboard.render.com/web/srv-d6itap3h46gs738ulr1g/deploys/dep-d80mc5brjlhs73aev7kg
 
