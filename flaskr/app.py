@@ -28,3 +28,10 @@ def draw_Advanced_numbers():
 
 
 
+
+
+# git add .
+# git commit -m "update"
+# git push
+
+# このコマンドでgithubに送れる
