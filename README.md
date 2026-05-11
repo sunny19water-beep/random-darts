@@ -48,7 +48,7 @@ DBの実装、DBを使い成功率や苦手なナンバーの表示
 
 ＵＲＬ:
 
-https://dashboard.render.com/web/srv-d6itap3h46gs738ulr1g/deploys/dep-d80lqibrjlhs73aefuj0?r=2026-05-11%4004%3A37%3A33%7E2026-05-11%4004%3A39%3A58
+\https://dashboard.render.com/web/srv-d6itap3h46gs738ulr1g/deploys/dep-d80mc5brjlhs73aev7kg
 
 
 
