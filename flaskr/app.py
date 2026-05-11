@@ -1,11 +1,16 @@
 import random
 
+#DBの設計　よくわかんない
+#10Rごとの成功率
+#累計で苦手なナンバーを出す。
+
 def draw_number():
     number = random.randint(1, 21)
     if number == 21:
         return "bull"
     else:
         return number
+    
     
 
 def draw_Advanced_numbers():
@@ -18,6 +23,8 @@ def draw_Advanced_numbers():
     else:
         bed = random.choice(["Single", "Double", "Triple"])
         return number, bed
+    
+
 
 
 

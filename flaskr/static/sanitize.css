@@ -1,0 +1,30 @@
+/* リセット（最低限） */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* 画像のはみ出し防止 */
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* リストの余計な装飾消す */
+ul, ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* リンクのデフォルト装飾軽く調整 */
+a {
+  text-decoration: none;
+  color: inherit;
+}

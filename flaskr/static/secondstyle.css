@@ -1,63 +1,100 @@
-/* ===== 共通背景 ===== */
+/*スマホを基準*/
+/*シンプルなランダムダーツのページ*/
+
 body {
     margin: 0;
     padding: 0;
     font-family: 'Orbitron', sans-serif;
     color: white;
-    background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.9)),
-                url("second.jpg") no-repeat center center fixed;
+
+    background:
+        linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.9)),
+        url("second.jpg") no-repeat center center fixed;
+
     background-size: cover;
     height: 100vh;
+
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 }
 
-/* ===== 中央コンテンツ ===== */
 .content {
     text-align: center;
+    padding: 20px;
 }
 
 h1 {
-    font-size: 30px;
+    font-size: 24px;
     letter-spacing: 2px;
 }
 
+/* スコア */
 strong {
     display: block;
-    font-size: 70px;
+    font-size: 50px;
     margin-top: 20px;
     color: #ff003c;
-    text-shadow: 0 0 20px #ff003c;
+    text-shadow: 0 0 15px #ff003c;
 }
 
-/* ===== ボタンを下に固定 ===== */
+
 .bottom-button {
-    position: absolute;
+    font-size: 40px ;
+    padding:12px 24px;
+    position: fixed;
     bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
 }
-
 .btn-primary {
-    padding: 15px 40px;
-    font-size: 18px;
+    padding: 12px 30px;
+    font-size: 16px;
     border-radius: 30px;
     background: linear-gradient(45deg, #ff003c, #ff7300);
     border: none;
+    color: white;
+    cursor: pointer;
     transition: 0.3s;
 }
-
 .btn-primary:hover {
     transform: scale(1.1);
     box-shadow: 0 0 20px #ff003c;
 }
 
-/* ============================= */
-/* 🔥🔥🔥 BULL演出 🔥🔥🔥 */
-/* ============================= */
+.form{
+    color:black
+}
 
+.selection{
+    font-size: 18px;
+    padding: 40px;
+}
+/*bullの処理*/
 .bull-mode {
     animation: flashBackground 1s infinite alternate;
+}
+
+
+.bull-text {
+    font-size: 60px;
+    color: gold;
+    text-shadow:
+        0 0 10px gold,
+        0 0 20px orange,
+        0 0 40px red;
+    animation: glow 1s infinite alternate;
+}
+
+/*アニメーション*/
+@keyframes glow {
+    from {
+        transform: scale(1);
+    }
+    to {
+        transform: scale(1.15);
+    }
 }
 
 @keyframes flashBackground {
@@ -69,21 +106,30 @@ strong {
     }
 }
 
-.bull-text {
-    font-size: 90px;
-    color: gold;
-    text-shadow:
-        0 0 10px gold,
-        0 0 20px orange,
-        0 0 40px red;
-    animation: glow 1s infinite alternate;
-}
 
-@keyframes glow {
-    from {
-        transform: scale(1);
+/*PC用*/
+
+@media screen and (min-width: 768px) {
+
+    h1 {
+        font-size: 30px;
     }
-    to {
-        transform: scale(1.15);
+
+    strong {
+        font-size: 70px;
     }
+
+    .btn-primary {
+        padding: 15px 40px;
+        font-size: 18px;
+    }
+
+    .bull-text {
+        font-size: 90px;
+    }
+
+    .bottom-button {
+        bottom: 60px;
+    }
+
 }

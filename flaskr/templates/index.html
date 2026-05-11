@@ -5,27 +5,35 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ランダムダーツ</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='sanitize.css') }}">
+    <!-- <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet"> -->
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
     <h1>ランダムダーツへようこそ！</h1>
     <h2>ダーツの練習をもっと楽しく、効果的に！？</h2>
     <p>
-ランダムダーツとはダーツボードの的をラウンドごとランダムに指定して投げる練習法です<br>
-毎回違う狙いに挑戦できるため、精度や判断力を効率的に高められます<br>
-また集中力や修正力の向上にも役立ちます<br>
-初心者から上級者まで、単調になりがちな練習をより実践的にします<br>
+ランダムダーツとはダーツボードの的を<br>ラウンドごとランダムに指定して投げる練習法です<br>
+この練習では精度や判断力を効率的に高められます<br>
+集中力や修正力の向上にも役立ちます<br>
+単調になりがちな練習をより実践的に<br>
     </p>
 
-<a href="/next">
-        <button>Let's play!!</button>
+    <a href="/next">
+        <button>normal mode</button>
     </a>
 
     <a href="/Advanced">
-        <button>上級者向けモード</button>
-    </a>        
+        <button>Advance mode</button>
+    </a>  
+    
 
+    <div class="how">
+        <a href="https://www.dartslive.com/jp/beginner/throwing/">
+            ダーツの投げ方はこちら
+        </a>
+    </div>
+    
 
 </body>
 

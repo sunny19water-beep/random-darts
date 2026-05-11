@@ -1,14 +1,15 @@
-/* 全体背景 */
+/*スマホを基準*/
+
 body {
     margin: 0;
-    padding: 0;
+    padding: 20px;
     font-family: 'Orbitron', sans-serif;
     color: white;
-    
-    /* ダーツ画像背景 */
-    background: 
+
+    background:
         linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.8)),
         url("darts.jpeg") no-repeat center center fixed;
+
     background-size: cover;
 
     display: flex;
@@ -17,44 +18,85 @@ body {
     text-align: center;
 }
 
-/* タイトル */
+
 h1 {
-    margin-top: 80px;
-    font-size: 48px;
-    letter-spacing: 3px;
-    text-shadow: 0 0 15px #ff003c;
+    margin-top: 40px;
+    font-size: 32px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px #ff003c;
 }
 
-/* サブタイトル */
 h2 {
     font-weight: 400;
     color: hsl(0, 100%, 49%);
-    margin-bottom: 30px;
-}
-
-/* 説明文 */
-p {
-    width: 70%;
-    max-width: 800px;
-    line-height: 1.8;
-    font-size: 16px;
-}
-
-/* ボタン */
-button {
-    margin-top: 40px;
-    padding: 15px 40px;
+    margin-bottom: 20px;
     font-size: 18px;
+}
+
+p {
+    width: 90%;
+    max-width: 600px;
+    line-height: 1.8;
+    font-size: 14px;
+}
+
+button {
+    margin-top: 30px;
+    padding: 12px 30px;
+    font-size: 16px;
     border: none;
     border-radius: 30px;
     background: linear-gradient(45deg, #ff003c, #ff7300);
     color: white;
     cursor: pointer;
-    transition: 0.3s;
+    transition: 0.2s;
 }
 
-/* ボタンホバー */
+/* 右下に固定 */
+.how {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+}
+
 button:hover {
-    transform: scale(1.2);
+    transform: scale(1.1);
     box-shadow: 0 0 20px #ff003c;
+}
+
+.how a:hover{
+
+    color:brown;
+    border-bottom: 1px solid #c9a227;
+
+}
+
+
+
+/*PC用 */
+
+@media screen and (min-width: 768px) {
+
+    h1 {
+        margin-top: 80px;
+        font-size: 48px;
+        letter-spacing: 3px;
+    }
+
+    h2 {
+        font-size: 22px;
+        margin-bottom: 30px;
+    }
+
+    p {
+        width: 70%;
+        max-width: 800px;
+        font-size: 16px;
+    }
+
+    button {
+        padding: 15px 40px;
+        font-size: 18px;
+    }
+
 }
