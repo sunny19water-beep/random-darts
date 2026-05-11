@@ -1,5 +1,7 @@
 使用スタック　flask html css
 
+https://dashboard.render.com/web/srv-d6itap3h46gs738ulr1g/deploys/dep-d80lqibrjlhs73aefuj0?r=2026-05-11%4004%3A37%3A33%7E2026-05-11%4004%3A39%3A58
+
 このwebappはずっとpythonでatcoerをしてきて開発をしたことがない状態で何か形に残るものを作りたくて制作しました。
 僕はダーツにハマっていたので、ダーツを練習するためのランダムに数字を出す簡単なwebappを作成しました。
 開発派初めてなので、AIに聞いたりyoutubeで学んだりしているので、いろいろな流派が混ざってコードが汚くなっていると思いますがご容赦ください。
