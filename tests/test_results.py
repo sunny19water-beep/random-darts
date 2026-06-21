@@ -49,7 +49,7 @@ class ResultSecurityTestCase(unittest.TestCase):
 
     def test_normal_target_cannot_be_changed_or_replayed(self):
         with patch('flaskr.draw_number', return_value=20):
-            html = self.client.get('/next').get_data(as_text=True)
+            html = self.client.get('/darts-random-number').get_data(as_text=True)
 
         self.assertNotIn('name="number"', html)
         token = self.extract_token(html)
@@ -79,7 +79,7 @@ class ResultSecurityTestCase(unittest.TestCase):
 
     def test_advanced_target_uses_server_values(self):
         with patch('flaskr.draw_advanced_numbers', return_value=(18, 'Triple')):
-            html = self.client.get('/advanced').get_data(as_text=True)
+            html = self.client.get('/darts-practice').get_data(as_text=True)
 
         self.assertNotIn('name="number"', html)
         self.assertNotIn('name="bed"', html)
@@ -106,7 +106,7 @@ class ResultSecurityTestCase(unittest.TestCase):
             self.assertIn(draw_cricket_number(), CRICKET_NUMBERS)
 
         with patch('flaskr.draw_cricket_number', return_value=15):
-            html = self.client.get('/cricket').get_data(as_text=True)
+            html = self.client.get('/darts-cricket-practice').get_data(as_text=True)
 
         self.assertEqual(self.extract_target_number(html), '15')
         token = self.extract_token(html)
@@ -171,7 +171,7 @@ class ResultSecurityTestCase(unittest.TestCase):
         self.assertEqual(weak_numbers, [str(number) for number in range(1, 8)])
 
     def test_weakness_practice_requires_enough_data(self):
-        page = self.client.get('/weakness').get_data(as_text=True)
+        page = self.client.get('/darts-weak-number').get_data(as_text=True)
         self.assertIn('あと 50 本', page)
         self.assertNotIn('name="target_token"', page)
 
@@ -182,7 +182,7 @@ class ResultSecurityTestCase(unittest.TestCase):
             for _ in range(3):
                 save_result(20, 0, 'normal', user_id=self.user_id)
 
-        page = self.client.get('/weakness').get_data(as_text=True)
+        page = self.client.get('/darts-weak-number').get_data(as_text=True)
         self.assertIn('苦手ナンバーを練習しましょう', page)
         self.assertEqual(self.extract_target_number(page), '20')
         token = self.extract_token(page)
@@ -199,7 +199,7 @@ class ResultSecurityTestCase(unittest.TestCase):
             ).fetchone()
         self.assertEqual(tuple(result), ('20', 2))
 
-        next_page = self.client.get('/weakness').get_data(as_text=True)
+        next_page = self.client.get('/darts-weak-number').get_data(as_text=True)
         self.assertEqual(self.extract_target_number(next_page), '1')
 
 

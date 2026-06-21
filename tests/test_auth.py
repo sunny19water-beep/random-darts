@@ -127,7 +127,7 @@ class AuthenticationTestCase(unittest.TestCase):
         self.assertIn('login-player でログイン中', self.client.get('/').get_data(as_text=True))
 
     def test_anonymous_practice_is_not_saved(self):
-        page = self.client.get('/next').get_data(as_text=True)
+        page = self.client.get('/darts-random-number').get_data(as_text=True)
         token = self.extract_target_token(page)
         response = self.client.post(
             '/success',
@@ -144,6 +144,31 @@ class AuthenticationTestCase(unittest.TestCase):
         self.assertEqual(response.json, {'status': 'ok'})
         self.assertEqual(response.headers['X-Content-Type-Options'], 'nosniff')
         self.assertEqual(response.headers['X-Frame-Options'], 'DENY')
+
+    def test_public_page_urls_and_legacy_redirects(self):
+        current_paths = [
+            '/darts-practice',
+            '/darts-random-number',
+            '/darts-cricket-practice',
+            '/darts-weak-number',
+            '/darts-success-rate',
+        ]
+        for path in current_paths:
+            with self.subTest(path=path):
+                self.assertEqual(self.client.get(path).status_code, 200)
+
+        legacy_paths = {
+            '/advanced': '/darts-practice',
+            '/next': '/darts-random-number',
+            '/cricket': '/darts-cricket-practice',
+            '/weakness': '/darts-weak-number',
+            '/result': '/darts-success-rate',
+        }
+        for old_path, current_path in legacy_paths.items():
+            with self.subTest(path=old_path):
+                response = self.client.get(old_path)
+                self.assertEqual(response.status_code, 301)
+                self.assertEqual(response.headers['Location'], current_path)
 
     def test_weekly_and_all_time_rankings_are_calculated(self):
         with app.app_context():

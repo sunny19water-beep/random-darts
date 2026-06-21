@@ -1,7 +1,6 @@
 import os
 import secrets
 from datetime import datetime, timedelta, timezone
-from zoneinfo import ZoneInfo
 
 from flask import Flask, abort, g, redirect, render_template, request, session, url_for
 from .app import CRICKET_NUMBERS, draw_advanced_numbers, draw_cricket_number, draw_number
@@ -63,7 +62,7 @@ def about():
     return render_template('about.html')
 
 
-@app.route('/result')
+@app.route('/darts-success-rate')
 def result():
     selected_range = request.args.get('range', '10')
     if selected_range not in RESULT_RANGES:
@@ -101,7 +100,7 @@ def result():
     )
 
 
-@app.route('/weakness')
+@app.route('/darts-weak-number')
 def weakness_practice():
     user_id = g.user['id'] if g.user is not None else None
     weakness = get_weakness_analysis(user_id)
@@ -137,7 +136,7 @@ def weakness_success():
     return redirect(url_for('weakness_practice'))
 
 
-@app.route('/cricket')
+@app.route('/darts-cricket-practice')
 def cricket_page():
     cricket_number = draw_cricket_number()
     target_token = create_pending_target('cricket', cricket_number)
@@ -160,7 +159,7 @@ def cricket_success():
     return redirect(url_for('cricket_page'))
 
 
-@app.route('/next')
+@app.route('/darts-random-number')
 def next_page():
     random_number = draw_number()
     target_token = create_pending_target('normal', random_number)
@@ -178,8 +177,7 @@ def success():
     save_authenticated_result(number, success_count, mode='normal')
     return redirect(url_for('next_page'))
 
-@app.route('/Advanced')
-@app.route('/advanced')
+@app.route('/darts-practice')
 def advanced_page():
     random_number, bed_number = draw_advanced_numbers()
     target_token = create_pending_target('advanced', random_number, bed_number)
@@ -202,6 +200,32 @@ def advanced_success():
 
     save_authenticated_result(number, success_count, mode='advanced', bed=bed)
     return redirect(url_for('advanced_page'))
+
+
+@app.get('/result')
+def legacy_result():
+    return redirect(url_for('result'), code=301)
+
+
+@app.get('/weakness')
+def legacy_weakness():
+    return redirect(url_for('weakness_practice'), code=301)
+
+
+@app.get('/cricket')
+def legacy_cricket():
+    return redirect(url_for('cricket_page'), code=301)
+
+
+@app.get('/next')
+def legacy_next():
+    return redirect(url_for('next_page'), code=301)
+
+
+@app.get('/Advanced')
+@app.get('/advanced')
+def legacy_advanced():
+    return redirect(url_for('advanced_page'), code=301)
 
 
 def validate_number(number):
@@ -348,7 +372,8 @@ def save_authenticated_result(number, success_count, mode, bed=None):
 
 
 def get_current_week_start_utc():
-    now_jst = datetime.now(ZoneInfo('Asia/Tokyo'))
+    jst = timezone(timedelta(hours=9))
+    now_jst = datetime.now(jst)
     week_start_jst = (now_jst - timedelta(days=now_jst.weekday())).replace(
         hour=0,
         minute=0,
