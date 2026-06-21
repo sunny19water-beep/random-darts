@@ -12,15 +12,19 @@ body {
         url("second.jpg") no-repeat center center fixed;
 
     background-size: cover;
-    height: 100vh;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: max(76px, calc(env(safe-area-inset-top) + 64px)) 16px max(24px, env(safe-area-inset-bottom));
 
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    overflow-x: hidden;
 }
 
 .content {
+    width: min(620px, 100%);
     text-align: center;
     padding: 20px;
 }
@@ -75,9 +79,9 @@ strong {
 }
 
 .practice-nav {
-    position: fixed;
-    top: 20px;
-    right: 20px;
+    position: absolute;
+    top: max(12px, env(safe-area-inset-top));
+    right: max(12px, env(safe-area-inset-right));
     display: flex;
     gap: 16px;
 }
@@ -88,6 +92,7 @@ strong {
     border: 1px solid rgba(255, 255, 255, 0.55);
     border-radius: 999px;
     text-decoration: none;
+    min-height: 44px;
 }
 
 .score-buttons {
@@ -128,8 +133,39 @@ strong {
         right: 12px;
     }
 
+    h1 {
+        font-size: 20px;
+        line-height: 1.6;
+    }
+
     .content {
-        padding-top: 72px;
+        padding: 12px 0;
+    }
+
+    .score-buttons {
+        gap: 8px;
+        margin-top: 18px;
+    }
+}
+
+@media (max-height: 600px) and (orientation: landscape) {
+    body {
+        justify-content: flex-start;
+    }
+
+    strong,
+    .bull-text {
+        margin-top: 8px;
+        font-size: 44px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
     }
 }
 

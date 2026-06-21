@@ -26,11 +26,11 @@
                 <form action="{{ url_for('auth.register') }}" method="POST">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                     <label for="register-email">メールアドレス</label>
-                    <input id="register-email" name="email" type="email" value="{{ email or '' }}" autocomplete="email" required>
+                    <input id="register-email" name="email" type="email" value="{{ email or '' }}" maxlength="254" inputmode="email" autocapitalize="none" autocomplete="email" required>
                     <label for="username">ユーザー名</label>
                     <input id="username" name="username" type="text" value="{{ username or '' }}" minlength="2" maxlength="30" autocomplete="username" required>
                     <label for="register-password">パスワード</label>
-                    <input id="register-password" name="password" type="password" minlength="8" autocomplete="new-password" required>
+                    <input id="register-password" name="password" type="password" minlength="10" maxlength="128" autocomplete="new-password" required>
                     <button type="submit">登録する</button>
                 </form>
             </section>
@@ -41,9 +41,9 @@
                 <form action="{{ url_for('auth.login') }}" method="POST">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                     <label for="login-email">メールアドレス</label>
-                    <input id="login-email" name="email" type="email" value="{{ login_email or '' }}" autocomplete="email" required>
+                    <input id="login-email" name="email" type="email" value="{{ login_email or '' }}" maxlength="254" inputmode="email" autocapitalize="none" autocomplete="email" required>
                     <label for="login-password">パスワード</label>
-                    <input id="login-password" name="password" type="password" autocomplete="current-password" required>
+                    <input id="login-password" name="password" type="password" maxlength="128" autocomplete="current-password" required>
                     <button type="submit">ログイン</button>
                 </form>
             </section>

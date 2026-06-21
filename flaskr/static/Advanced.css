@@ -14,10 +14,14 @@ body{
     align-items:center;
 
     min-height:100vh;
+    min-height:100dvh;
+    padding:max(76px, calc(env(safe-area-inset-top) + 64px)) 20px max(24px, env(safe-area-inset-bottom));
+    overflow-x:hidden;
 }
 
 
 .content{
+    width:min(620px, 100%);
     text-align:center;
     background:#111;
     padding:40px 30px;
@@ -101,9 +105,9 @@ strong{
 }
 
 .practice-nav{
-    position:fixed;
-    top:20px;
-    right:20px;
+    position:absolute;
+    top:max(12px, env(safe-area-inset-top));
+    right:max(12px, env(safe-area-inset-right));
     display:flex;
     gap:12px;
 }
@@ -114,6 +118,7 @@ strong{
     border:1px solid #c9a227;
     border-radius:999px;
     text-decoration:none;
+    min-height:44px;
 }
 
 .selection label{
@@ -189,4 +194,38 @@ button.btn{
 .score-buttons button:focus-visible{
     background:#c9a227;
     color:#0b0b0b;
+}
+
+@media (max-width:480px){
+    .content{
+        padding:24px 16px;
+    }
+
+    h1{
+        font-size:20px;
+    }
+
+    .score-buttons{
+        gap:8px;
+        margin-top:20px;
+    }
+}
+
+@media (max-height:600px) and (orientation:landscape){
+    body{
+        justify-content:flex-start;
+    }
+
+    .content{
+        padding:18px;
+    }
+}
+
+@media (prefers-reduced-motion:reduce){
+    *,
+    *::before,
+    *::after{
+        transition:none !important;
+        animation:none !important;
+    }
 }

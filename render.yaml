@@ -13,6 +13,10 @@ services:
         generateValue: true
       - key: DATABASE_PATH
         value: /var/data/darts.sqlite
+      - key: PUBLIC_BASE_URL
+        value: https://random-darts.onrender.com
+      - key: TRUSTED_HOSTS
+        value: random-darts.onrender.com
     disk:
       name: darts-data
       mountPath: /var/data

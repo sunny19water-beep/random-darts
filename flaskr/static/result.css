@@ -4,6 +4,7 @@
 
 body {
     min-height: 100vh;
+    min-height: 100dvh;
     margin: 0;
     background: #090909;
     color: #e5e5e5;
@@ -78,6 +79,7 @@ nav a,
 
 .range-selector select,
 .range-selector button {
+    min-height: 44px;
     padding: 9px 14px;
     background: #090909;
     color: #e5e5e5;
@@ -355,5 +357,29 @@ nav a:focus-visible,
     .range-selector {
         align-items: flex-start;
         flex-direction: column;
+    }
+
+    .ranking-list li {
+        grid-template-columns: 28px minmax(0, 1fr) auto;
+    }
+
+    .ranking-list small {
+        grid-column: 2 / -1;
+    }
+
+    .chart-card,
+    .ranking-card,
+    .weakness-panel,
+    .share-panel {
+        padding: 18px 14px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
     }
 }

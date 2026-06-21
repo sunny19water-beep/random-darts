@@ -1,6 +1,8 @@
 /*スマホを基準*/
 
 body {
+    min-height: 100vh;
+    min-height: 100dvh;
     margin: 0;
     padding: 20px;
     font-family: 'Orbitron', sans-serif;
@@ -27,7 +29,7 @@ body {
     align-items: flex-start;
     justify-content: space-between;
     width: 100%;
-    padding: 14px;
+    padding: max(14px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) 14px max(14px, env(safe-area-inset-left));
     background: linear-gradient(rgba(0, 0, 0, 0.88), rgba(0, 0, 0, 0));
 }
 
@@ -85,9 +87,11 @@ p {
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 100%;
 }
 
 .menu-button {
+    width: min(280px, 100%);
     margin-top: 30px;
     padding: 12px 30px;
     font-size: 16px;
@@ -128,9 +132,9 @@ p {
 
 /* 右下に固定 */
 .how {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
+    align-self: flex-end;
+    margin-top: 40px;
+    padding-bottom: env(safe-area-inset-bottom);
 }
 
 .menu-button:hover,
@@ -183,4 +187,33 @@ p {
         font-size: 18px;
     }
 
+}
+
+@media (max-width: 420px) {
+    .top-bar {
+        gap: 8px;
+    }
+
+    .utility-button {
+        padding: 9px 11px;
+        font-size: 12px;
+    }
+
+    .account-panel {
+        gap: 6px;
+    }
+
+    .account-panel span {
+        max-width: 72px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition: none !important;
+        animation: none !important;
+    }
 }

@@ -6,11 +6,13 @@ import unittest
 from werkzeug.security import check_password_hash
 
 from flaskr import app
+from flaskr.auth import login_attempts
 from flaskr.db import create_user, ensure_schema, get_db, get_rankings, save_result
 
 
 class AuthenticationTestCase(unittest.TestCase):
     def setUp(self):
+        login_attempts.clear()
         self.temp_directory = tempfile.TemporaryDirectory()
         database_path = os.path.join(self.temp_directory.name, 'auth.sqlite')
         app.config.update(
@@ -144,6 +146,27 @@ class AuthenticationTestCase(unittest.TestCase):
         self.assertEqual(response.json, {'status': 'ok'})
         self.assertEqual(response.headers['X-Content-Type-Options'], 'nosniff')
         self.assertEqual(response.headers['X-Frame-Options'], 'DENY')
+        self.assertIn("default-src 'self'", response.headers['Content-Security-Policy'])
+        self.assertIn('camera=()', response.headers['Permissions-Policy'])
+
+        page = self.client.get('/darts-success-rate')
+        nonce = re.search(r'<script nonce="([^"]+)"', page.get_data(as_text=True)).group(1)
+        self.assertIn(f"'nonce-{nonce}'", page.headers['Content-Security-Policy'])
+        self.assertEqual(page.headers['Cache-Control'], 'no-store')
+
+    def test_login_is_rate_limited(self):
+        csrf_token = self.extract_csrf(self.client.get('/auth').get_data(as_text=True))
+        login_data = {
+            'csrf_token': csrf_token,
+            'email': 'attacked@example.com',
+            'password': 'incorrect-password',
+        }
+        for _ in range(5):
+            self.assertEqual(self.client.post('/login', data=login_data).status_code, 400)
+
+        blocked = self.client.post('/login', data=login_data)
+        self.assertEqual(blocked.status_code, 429)
+        self.assertEqual(blocked.headers['Retry-After'], '900')
 
     def test_public_page_urls_and_legacy_redirects(self):
         current_paths = [

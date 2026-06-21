@@ -20,8 +20,17 @@ is_production = os.environ.get('APP_ENV') == 'production'
 if is_production:
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 secret_key = os.environ.get('SECRET_KEY')
+public_base_url = os.environ.get('PUBLIC_BASE_URL', '').rstrip('/')
 if is_production and not secret_key:
     raise RuntimeError('SECRET_KEY must be set in production.')
+if is_production and public_base_url and not public_base_url.startswith('https://'):
+    raise RuntimeError('PUBLIC_BASE_URL must use HTTPS in production.')
+
+trusted_hosts = [
+    host.strip()
+    for host in os.environ.get('TRUSTED_HOSTS', '').split(',')
+    if host.strip()
+]
 
 database_path = os.environ.get(
     'DATABASE_PATH',
@@ -35,9 +44,17 @@ app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE='Lax',
     SESSION_COOKIE_SECURE=is_production,
+    PERMANENT_SESSION_LIFETIME=timedelta(hours=12),
+    TRUSTED_HOSTS=trusted_hosts or None,
+    PUBLIC_BASE_URL=public_base_url,
 )
 init_db_app(app)
 app.register_blueprint(auth_bp)
+
+
+@app.before_request
+def create_csp_nonce():
+    g.csp_nonce = secrets.token_urlsafe(16)
 
 
 @app.after_request
@@ -45,8 +62,27 @@ def add_security_headers(response):
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-Frame-Options'] = 'DENY'
     response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    response.headers['Permissions-Policy'] = (
+        'camera=(), microphone=(), geolocation=(), payment=()'
+    )
+    response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
+    csp = (
+        "default-src 'self'; "
+        f"script-src 'self' 'nonce-{g.csp_nonce}'; "
+        "style-src 'self' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com; "
+        "img-src 'self' data:; connect-src 'self'; object-src 'none'; "
+        "base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+    )
     if is_production:
-        response.headers['Strict-Transport-Security'] = 'max-age=31536000'
+        csp += '; upgrade-insecure-requests'
+    response.headers['Content-Security-Policy'] = csp
+    if response.mimetype == 'text/html':
+        response.headers['Cache-Control'] = 'no-store'
+    if is_production:
+        response.headers['Strict-Transport-Security'] = (
+            'max-age=31536000; includeSubDomains'
+        )
     return response
 
 
@@ -96,6 +132,13 @@ def result():
             '#ダーツ練習'
         )
 
+    result_path = url_for('result', range=selected_range)
+    share_url = (
+        f"{app.config['PUBLIC_BASE_URL']}{result_path}"
+        if app.config['PUBLIC_BASE_URL']
+        else url_for('result', range=selected_range, _external=True)
+    )
+
     return render_template(
         'result.html',
         selected_range=selected_range,
@@ -108,7 +151,7 @@ def result():
         all_time_rankings=get_rankings(),
         chart_data=chart_data,
         share_text=share_text,
-        share_url=url_for('result', range=selected_range, _external=True),
+        share_url=share_url,
     )
 
 

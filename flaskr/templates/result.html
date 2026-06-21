@@ -170,7 +170,7 @@
         <a class="home-link" href="{{ url_for('index') }}">トップページへ戻る</a>
     </main>
 
-    <script>
+    <script nonce="{{ g.csp_nonce }}">
         const chartData = {{ chart_data | tojson }};
 
         function prepareCanvas(canvas, itemCount) {

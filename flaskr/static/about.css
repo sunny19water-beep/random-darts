@@ -6,6 +6,7 @@
 
 body {
     min-height: 100vh;
+    min-height: 100dvh;
     margin: 0;
     padding: 24px;
     display: flex;
@@ -38,6 +39,14 @@ h1 {
     line-height: 1.8;
 }
 
+.about-content p {
+    overflow-wrap: anywhere;
+}
+
+.about-content a {
+    color: #d9bc5b;
+}
+
 .back-link {
     display: block;
     width: fit-content;
@@ -59,5 +68,21 @@ h1 {
 @media screen and (min-width: 768px) {
     .about-card {
         padding: 48px 56px;
+    }
+}
+
+@media screen and (max-width: 767px) {
+    body {
+        align-items: flex-start;
+        padding: max(12px, env(safe-area-inset-top)) 10px max(12px, env(safe-area-inset-bottom));
+    }
+
+    .about-card {
+        padding: 26px 18px;
+    }
+
+    .about-content {
+        margin: 24px 0;
+        line-height: 1.7;
     }
 }
