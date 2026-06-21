@@ -8,19 +8,61 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='about.css') }}">
 </head>
 <body>
-    <main class="about-card">
-        <h1>このアプリについて</h1>
+    ```html
+<main class="about-card">
+    <h1>このアプリについて</h1>
 
-        <section class="about-content" aria-label="アプリの説明">
-            <p>
-                ランダムダーツはダーツボードの的をラウンドごとランダムに指定して投げる練習法です<br>
-                この練習では精度や判断力を効率的に高められ、集中力や修正力の向上にも役立ちます
-                単調になりがちな練習をより実践的に行うことが出来ます<br>
-                またこのアプリはNormalモードとAdvanceモードに分かれており、それぞれの結果の確認などもできます
-            </p>
-        </section>
+    <section class="about-content" aria-label="アプリの説明">
+        <p>
+            ランダムダーツは、表示されたナンバーを3投で狙い、その成功本数を記録しながら練習できるダーツ練習アプリです。<br>
+            毎回異なるターゲットを狙う練習は、運動学習における「文脈干渉効果」と関連する考え方です。研究では、ランダム練習は練習中には難しく感じやすい一方で、後日の保持・応用成績を高める可能性が示されています。<br>
+            そのため、本アプリでは、実戦で必要になる判断力・集中力・狙いを修正する力を意識しながら練習できます。
+        </p>
 
-        <a class="back-link" href="{{ url_for('index') }}">トップページへ戻る</a>
-    </main>
+        <h2>練習モード</h2>
+        <p>
+            <strong>Normal</strong>：ランダムに選ばれたナンバーを狙います。<br>
+            <strong>Advanced</strong>：ナンバーに加えて、Single・Double・Tripleなども指定されます。<br>
+            <strong>Cricket</strong>：15〜20とBULLをランダムに練習します。<br>
+            <strong>苦手ナンバー練習</strong>：記録から成功率の低い7ナンバーを選び、順番に練習します。
+        </p>
+
+        <h2>結果の記録と分析</h2>
+        <p>
+            ログインすると練習結果が保存されます。<br>
+            結果ページでは、直近3・10・50・100ラウンド、または全期間の成功率を確認できます。ナンバー別成功率や成績推移のグラフ、週間・歴代ランキングも表示されます。<br>
+            50投以上練習すると、成功率をもとに苦手なナンバーを分析します。練習記録を振り返り、自分の弱点を把握することで、感覚だけに頼らず、重点的に練習するナンバーを決めやすくなります。
+        </p>
+
+        <h2>結果の共有</h2>
+        <p>
+            練習結果は、成功率・成功本数・投数と一緒にXへ共有できます。<br>
+            自分の練習記録を残したり、他のプレイヤーと結果を共有したりすることで、継続的な練習のモチベーションにもつなげられます。
+        </p>
+
+        <h2>おすすめの使い方</h2>
+        <p>
+            まずはNormalモードで記録を蓄積し、50投以上のデータが集まったら苦手ナンバー分析を確認します。<br>
+            苦手ナンバーが判定されたら、専用モードで重点的に練習するのがおすすめです。
+        </p>
+
+        <h2>参考リンク</h2>
+        <p>
+            ランダム練習や変動練習に関する研究は以下を参考にしています。<br>
+            <a href="https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2024.1377122/full" target="_blank" rel="noopener noreferrer">
+                The effect of contextual interference on transfer in motor learning
+            </a><br>
+            <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11237090/" target="_blank" rel="noopener noreferrer">
+                High contextual interference improves retention in motor learning
+            </a><br>
+            <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11212619/" target="_blank" rel="noopener noreferrer">
+                Applying different levels of practice variability for motor learning
+            </a>
+        </p>
+    </section>
+
+    <a class="back-link" href="{{ url_for('index') }}">トップページへ戻る</a>
+</main>
+
 </body>
 </html>
