@@ -64,12 +64,17 @@ strong {
 }
 
 .form{
-    color:black
+    color:white;
 }
 
 .selection{
     font-size: 18px;
     padding: 40px;
+}
+
+.selection label {
+    display: block;
+    margin-bottom: 10px;
 }
 /*bullの処理*/
 .bull-mode {

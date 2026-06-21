@@ -40,7 +40,13 @@ p {
     font-size: 14px;
 }
 
-button {
+.menu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.menu-button {
     margin-top: 30px;
     padding: 12px 30px;
     font-size: 16px;
@@ -50,6 +56,7 @@ button {
     color: white;
     cursor: pointer;
     transition: 0.2s;
+    text-decoration: none;
 }
 
 /* 右下に固定 */
@@ -59,7 +66,8 @@ button {
     right: 20px;
 }
 
-button:hover {
+.menu-button:hover,
+.menu-button:focus-visible {
     transform: scale(1.1);
     box-shadow: 0 0 20px #ff003c;
 }
@@ -94,7 +102,7 @@ button:hover {
         font-size: 16px;
     }
 
-    button {
+    .menu-button {
         padding: 15px 40px;
         font-size: 18px;
     }

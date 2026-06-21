@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ランダムダーツ</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='secondstyle.css') }}">
 </head>
 
@@ -24,10 +23,11 @@
     </div>
 
     <div class="form">
-    <form action="/success" method="POST">
+    <form action="{{ url_for('success') }}" method="POST">
         <div class="selection">
-        <select name="count">
-            <option value="">成功回数を記入！</option>
+        <label for="normal-count">3投中の成功回数</label>
+        <select id="normal-count" name="count" required>
+            <option value="" selected disabled>成功回数を選択！</option>
             <option value="0">  0  </option>
             <option value="1">  1  </option>
             <option value="2">  2  </option>
@@ -35,8 +35,8 @@
         </select>
         </div>
         <div class="bottom-button">
-            <button type="submit" class="btn btn-outline-primary">
-            next Round
+            <button type="submit" class="btn btn-primary">
+                Next Round
             </button>
         </div>
     </form>

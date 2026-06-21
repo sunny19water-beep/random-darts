@@ -25,24 +25,22 @@
         
     </div>
 
-    <form action="/Advanced_success" method="POST">
+    <form action="{{ url_for('advanced_success') }}" method="POST">
         <div class="selection">
-        <select name="count">
-            <option value="">成功回数を記入！</option>
+        <label for="advanced-count">3投中の成功回数</label>
+        <select id="advanced-count" name="count" required>
+            <option value="" selected disabled>成功回数を選択！</option>
             <option value="0">  0  </option>
             <option value="1">  1  </option>
             <option value="2">  2  </option>
             <option value="3">  3  </option>
         </select>
         </div>
-    
-    
+
+        <div class="bottom-button">
+            <button class="btn" type="submit">Next Round</button>
+        </div>
     </form>
-    
-    <div class="bottom-button">
-        
-        <a class="btn btn-primary" href="/Advanced">Next Round</a>
-    </div>
 
 </body>
 </html>
