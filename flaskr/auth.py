@@ -81,10 +81,12 @@ def logout():
 
 
 def validate_registration(email, username, password):
-    if not EMAIL_PATTERN.fullmatch(email):
+    if len(email) > 254 or not EMAIL_PATTERN.fullmatch(email):
         return '有効なメールアドレスを入力してください。'
     if not 2 <= len(username) <= 30:
         return 'ユーザー名は2〜30文字で入力してください。'
+    if any(character.isspace() for character in username):
+        return 'ユーザー名には空白文字を使用できません。'
     if len(password) < 8:
         return 'パスワードは8文字以上で入力してください。'
     return None

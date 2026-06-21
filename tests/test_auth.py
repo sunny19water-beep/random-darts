@@ -138,6 +138,13 @@ class AuthenticationTestCase(unittest.TestCase):
             count = get_db().execute('SELECT COUNT(*) FROM throw_results').fetchone()[0]
         self.assertEqual(count, 0)
 
+    def test_health_check_and_security_headers(self):
+        response = self.client.get('/health')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, {'status': 'ok'})
+        self.assertEqual(response.headers['X-Content-Type-Options'], 'nosniff')
+        self.assertEqual(response.headers['X-Frame-Options'], 'DENY')
+
     def test_weekly_and_all_time_rankings_are_calculated(self):
         with app.app_context():
             first = create_user('first@example.com', 'first', 'hash')

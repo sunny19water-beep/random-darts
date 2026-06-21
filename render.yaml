@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: random-darts
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --workers 1 --threads 4 --timeout 120 --access-logfile - flaskr:app
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_PATH
+        value: /var/data/darts.sqlite
+    disk:
+      name: darts-data
+      mountPath: /var/data
+      sizeGB: 1

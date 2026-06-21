@@ -8,7 +8,7 @@ from .app import CRICKET_NUMBERS, draw_advanced_numbers, draw_cricket_number, dr
 from .auth import bp as auth_bp
 from .auth import get_csrf_token
 from .db import init_app as init_db_app
-from .db import get_rankings, get_results, save_result
+from .db import get_db, get_rankings, get_results, save_result
 
 RESULT_RANGES = {'3': 3, '10': 10, '50': 50, '100': 100, 'all': None}
 MIN_TOTAL_THROWS_FOR_ANALYSIS = 50
@@ -16,11 +16,42 @@ WORST_NUMBER_LIMIT = 7
 MAX_PENDING_TARGETS = 10
 
 app = Flask(__name__)
-app.config['DATABASE'] = os.path.join(app.instance_path, 'darts.sqlite')
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or secrets.token_hex(32)
-os.makedirs(app.instance_path, exist_ok=True)
+is_production = os.environ.get('APP_ENV') == 'production'
+secret_key = os.environ.get('SECRET_KEY')
+if is_production and not secret_key:
+    raise RuntimeError('SECRET_KEY must be set in production.')
+
+database_path = os.environ.get(
+    'DATABASE_PATH',
+    os.path.join(app.instance_path, 'darts.sqlite'),
+)
+os.makedirs(os.path.dirname(database_path) or app.instance_path, exist_ok=True)
+app.config.update(
+    DATABASE=database_path,
+    SECRET_KEY=secret_key or secrets.token_hex(32),
+    MAX_CONTENT_LENGTH=64 * 1024,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Lax',
+    SESSION_COOKIE_SECURE=is_production,
+)
 init_db_app(app)
 app.register_blueprint(auth_bp)
+
+
+@app.after_request
+def add_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    if is_production:
+        response.headers['Strict-Transport-Security'] = 'max-age=31536000'
+    return response
+
+
+@app.get('/health')
+def health():
+    get_db().execute('SELECT 1').fetchone()
+    return {'status': 'ok'}
 
 @app.route('/')
 def index():
