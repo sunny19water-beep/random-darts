@@ -92,12 +92,50 @@ nav a,
 }
 
 .summary-card,
+.share-panel,
 .weakness-panel,
 .chart-card,
 .ranking-card {
     background: #141414;
     border: 1px solid #292929;
     border-radius: 12px;
+}
+
+.share-panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin-top: 14px;
+    padding: 22px 24px;
+    border-color: #315a8a;
+}
+
+.share-panel p:last-child {
+    margin: 8px 0 0;
+    color: #aaa;
+}
+
+.x-share-button {
+    flex: 0 0 auto;
+    min-width: 180px;
+    padding: 12px 20px;
+    background: #f5f5f5;
+    color: #090909;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 999px;
+}
+
+.x-share-button:hover,
+.x-share-button:focus-visible {
+    background: #c9a227;
+}
+
+.x-share-button.disabled {
+    background: #292929;
+    color: #888;
 }
 
 .login-notice {
@@ -272,9 +310,24 @@ nav a:focus-visible,
     }
 
     .page-header,
+    .share-panel,
     .weakness-panel {
         align-items: flex-start;
         flex-direction: column;
+    }
+
+    nav {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+
+    nav a {
+        flex: 0 0 auto;
+    }
+
+    .x-share-button {
+        width: 100%;
     }
 
     .summary-grid,

@@ -84,6 +84,53 @@ strong {
 
 .practice-nav a {
     color: white;
+    padding: 10px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: 999px;
+    text-decoration: none;
+}
+
+.score-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(52px, 1fr));
+    gap: 10px;
+    width: min(340px, calc(100vw - 32px));
+    margin: 28px 0 0;
+    padding: 0;
+    border: 0;
+}
+
+.score-buttons legend {
+    width: 100%;
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+.score-buttons button {
+    min-height: 54px;
+    color: white;
+    background: rgba(10, 10, 10, 0.8);
+    border: 2px solid #ff7300;
+    border-radius: 12px;
+    font: 700 20px 'Orbitron', sans-serif;
+    cursor: pointer;
+}
+
+.score-buttons button:hover,
+.score-buttons button:focus-visible {
+    color: #0b0b0b;
+    background: #ff7300;
+}
+
+@media (max-width: 480px) {
+    .practice-nav {
+        top: 12px;
+        right: 12px;
+    }
+
+    .content {
+        padding-top: 72px;
+    }
 }
 
 .practice-label {

@@ -17,6 +17,7 @@
             <nav aria-label="練習画面へ戻る">
                 <a href="{{ url_for('next_page') }}">Normal</a>
                 <a href="{{ url_for('advanced_page') }}">Advanced</a>
+                <a href="{{ url_for('cricket_page') }}">Cricket</a>
                 <a href="{{ url_for('weakness_practice') }}">苦手練習</a>
             </nav>
         </header>
@@ -62,6 +63,24 @@
                 <p>記録ラウンド</p>
                 <strong>{{ summary.rounds }}<span>R</span></strong>
             </article>
+        </section>
+
+        <section class="share-panel" aria-labelledby="share-heading">
+            <div>
+                <p class="section-label">Share</p>
+                <h2 id="share-heading">練習結果をシェア</h2>
+                <p>選択中の期間の成功率と投数をXへ投稿できます。</p>
+            </div>
+            {% if share_text %}
+                <a
+                    class="x-share-button"
+                    href="https://twitter.com/intent/tweet?text={{ share_text | urlencode }}&url={{ share_url | urlencode }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >Xで結果を共有</a>
+            {% else %}
+                <span class="x-share-button disabled" aria-disabled="true">記録後に共有できます</span>
+            {% endif %}
         </section>
 
         <section class="weakness-panel">

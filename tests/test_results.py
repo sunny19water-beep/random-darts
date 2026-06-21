@@ -3,7 +3,9 @@ import re
 import sqlite3
 import tempfile
 import unittest
+from html import unescape
 from unittest.mock import patch
+from urllib.parse import parse_qs, urlparse
 
 from flaskr import app, get_weakness_analysis
 from flaskr.app import CRICKET_NUMBERS, draw_cricket_number
@@ -169,6 +171,22 @@ class ResultSecurityTestCase(unittest.TestCase):
 
         weak_numbers = [stat['number'] for stat in analysis['weak_numbers']]
         self.assertEqual(weak_numbers, [str(number) for number in range(1, 8)])
+
+    def test_result_can_be_shared_to_x(self):
+        with app.app_context():
+            save_result(20, 2, 'normal', user_id=self.user_id)
+
+        page = self.client.get('/darts-success-rate?range=3').get_data(as_text=True)
+        match = re.search(r'href="(https://twitter\.com/intent/tweet\?[^\"]+)"', page)
+        self.assertIsNotNone(match)
+        query = parse_qs(urlparse(unescape(match.group(1))).query)
+        self.assertIn('成功率 66.7%', query['text'][0])
+        self.assertEqual(query['url'][0], 'http://localhost/darts-success-rate?range=3')
+
+    def test_practice_page_has_one_tap_score_buttons(self):
+        page = self.client.get('/darts-random-number').get_data(as_text=True)
+        for count in range(4):
+            self.assertIn(f'name="count" value="{count}"', page)
 
     def test_weakness_practice_requires_enough_data(self):
         page = self.client.get('/darts-weak-number').get_data(as_text=True)

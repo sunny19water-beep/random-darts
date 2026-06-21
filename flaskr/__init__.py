@@ -3,6 +3,7 @@ import secrets
 from datetime import datetime, timedelta, timezone
 
 from flask import Flask, abort, g, redirect, render_template, request, session, url_for
+from werkzeug.middleware.proxy_fix import ProxyFix
 from .app import CRICKET_NUMBERS, draw_advanced_numbers, draw_cricket_number, draw_number
 from .auth import bp as auth_bp
 from .auth import get_csrf_token
@@ -16,6 +17,8 @@ MAX_PENDING_TARGETS = 10
 
 app = Flask(__name__)
 is_production = os.environ.get('APP_ENV') == 'production'
+if is_production:
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 secret_key = os.environ.get('SECRET_KEY')
 if is_production and not secret_key:
     raise RuntimeError('SECRET_KEY must be set in production.')
@@ -85,6 +88,13 @@ def result():
             'rates': [round(row['success_count'] / 3 * 100, 1) for row in results],
         },
     }
+    share_text = None
+    if summary['success_rate'] is not None:
+        share_text = (
+            f"ダーツ練習の結果：成功率 {summary['success_rate']}% "
+            f"（{summary['successes']}/{summary['total_throws']}本）\n"
+            '#ダーツ練習'
+        )
 
     return render_template(
         'result.html',
@@ -97,6 +107,8 @@ def result():
         weekly_rankings=get_rankings(week_start),
         all_time_rankings=get_rankings(),
         chart_data=chart_data,
+        share_text=share_text,
+        share_url=url_for('result', range=selected_range, _external=True),
     )
 
 

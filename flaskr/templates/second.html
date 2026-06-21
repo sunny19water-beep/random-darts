@@ -11,7 +11,10 @@
 
 <body class="{% if random_number == 'bull' %}bull-mode{% endif %}">
 
-    <a class="result-link" href="{{ url_for('result') }}">結果を見る</a>
+    <nav class="practice-nav" aria-label="ページ移動">
+        <a href="{{ url_for('result') }}">結果を見る</a>
+        <a href="{{ url_for('index') }}">トップへ</a>
+    </nav>
 
     
     <div class="content">
@@ -27,21 +30,13 @@
     <div class="form">
     <form action="{{ url_for('success') }}" method="POST">
         <input type="hidden" name="target_token" value="{{ target_token }}">
-        <div class="selection">
-        <label for="normal-count">3投中の成功回数</label>
-        <select id="normal-count" name="count" required>
-            <option value="" selected disabled>成功回数を選択！</option>
-            <option value="0">  0  </option>
-            <option value="1">  1  </option>
-            <option value="2">  2  </option>
-            <option value="3">  3  </option>
-        </select>
-        </div>
-        <div class="bottom-button">
-            <button type="submit" class="btn btn-primary">
-                Next Round
-            </button>
-        </div>
+        <fieldset class="score-buttons">
+            <legend>3投中の成功本数</legend>
+            <button type="submit" name="count" value="0">0</button>
+            <button type="submit" name="count" value="1">1</button>
+            <button type="submit" name="count" value="2">2</button>
+            <button type="submit" name="count" value="3">3</button>
+        </fieldset>
     </form>
     </div>
 
