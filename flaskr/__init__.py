@@ -47,6 +47,11 @@ def index():
     rate=0 #仮の値
     return render_template('index.html', rate=rate)
 
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
 # ノーマル
 @app.route('/next')
 def next_page():

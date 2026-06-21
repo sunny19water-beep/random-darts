@@ -10,23 +10,26 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h1>ランダムダーツへようこそ！</h1>
-    <h2>ダーツの練習をもっと楽しく、効果的に！？</h2>
+    <h1>ランダムダーツ</h1>
     <p>
-ランダムダーツとはダーツボードの的を<br>ラウンドごとランダムに指定して投げる練習法です<br>
-この練習では精度や判断力を効率的に高められます<br>
-集中力や修正力の向上にも役立ちます<br>
-単調になりがちな練習をより実践的に<br>
+        ダーツ練習アプリです
+        このアプリの使い方、説明は以下のボタンから確認できます
     </p>
+    <br>
+
+    <a href="{{ url_for('about') }}">
+        <button>このアプリについて</button>
+    </a>
 
     <a href="/next">
-        <button>normal mode</button>
+        <button>Normal mode</button>
     </a>
 
     <a href="/Advanced">
         <button>Advance mode</button>
-    </a>  
-    
+    </a>
+
+
 
     <div class="how">
         <a href="https://www.dartslive.com/jp/beginner/throwing/">
