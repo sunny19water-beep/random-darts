@@ -47,7 +47,11 @@
         <div class="content practice-empty">
             <p class="practice-label">Weak Number Practice</p>
             <h1>苦手ナンバーを分析中です</h1>
-            <p>あと {{ throws_until_analysis }} 本記録すると分析を始められます。</p>
+            {% if not is_authenticated %}
+                <p>認証・ログインすると記録が保存され、苦手ナンバーを分析できます。</p>
+            {% else %}
+                <p>あと {{ throws_until_analysis }} 本記録すると分析を始められます。</p>
+            {% endif %}
         </div>
     {% endif %}
 </body>

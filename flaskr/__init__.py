@@ -1,10 +1,14 @@
 import os
 import secrets
+from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
-from flask import Flask, abort, redirect, render_template, request, session, url_for
+from flask import Flask, abort, g, redirect, render_template, request, session, url_for
 from .app import CRICKET_NUMBERS, draw_advanced_numbers, draw_cricket_number, draw_number
+from .auth import bp as auth_bp
+from .auth import get_csrf_token
 from .db import init_app as init_db_app
-from .db import get_results, save_result
+from .db import get_rankings, get_results, save_result
 
 RESULT_RANGES = {'3': 3, '10': 10, '50': 50, '100': 100, 'all': None}
 MIN_TOTAL_THROWS_FOR_ANALYSIS = 50
@@ -16,10 +20,11 @@ app.config['DATABASE'] = os.path.join(app.instance_path, 'darts.sqlite')
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or secrets.token_hex(32)
 os.makedirs(app.instance_path, exist_ok=True)
 init_db_app(app)
+app.register_blueprint(auth_bp)
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', csrf_token=get_csrf_token())
 
 
 @app.route('/about')
@@ -33,10 +38,12 @@ def result():
     if selected_range not in RESULT_RANGES:
         selected_range = '10'
 
-    results = get_results(RESULT_RANGES[selected_range])
+    user_id = g.user['id'] if g.user is not None else None
+    results = get_results(RESULT_RANGES[selected_range], user_id) if user_id else []
     summary = summarize_results(results)
     number_stats = summarize_by_number(results)
-    weakness = get_weakness_analysis()
+    weakness = get_weakness_analysis(user_id)
+    week_start = get_current_week_start_utc()
 
     chart_data = {
         'numbers': {
@@ -57,13 +64,16 @@ def result():
         total_throws=weakness['total_throws'],
         min_total_throws=MIN_TOTAL_THROWS_FOR_ANALYSIS,
         throws_until_analysis=weakness['throws_until_analysis'],
+        weekly_rankings=get_rankings(week_start),
+        all_time_rankings=get_rankings(),
         chart_data=chart_data,
     )
 
 
 @app.route('/weakness')
 def weakness_practice():
-    weakness = get_weakness_analysis()
+    user_id = g.user['id'] if g.user is not None else None
+    weakness = get_weakness_analysis(user_id)
     if not weakness['weak_numbers']:
         return render_template(
             'weakness.html',
@@ -71,6 +81,7 @@ def weakness_practice():
             total_throws=weakness['total_throws'],
             throws_until_analysis=weakness['throws_until_analysis'],
             min_total_throws=MIN_TOTAL_THROWS_FOR_ANALYSIS,
+            is_authenticated=g.user is not None,
         )
 
     target_number = select_next_weak_number(weakness['weak_numbers'])
@@ -81,6 +92,7 @@ def weakness_practice():
         target_token=target_token,
         total_throws=weakness['total_throws'],
         min_total_throws=MIN_TOTAL_THROWS_FOR_ANALYSIS,
+        is_authenticated=True,
     )
 
 
@@ -89,7 +101,7 @@ def weakness_success():
     success_count = validate_success_count(request.form.get('count', type=int))
     target = consume_pending_target(request.form.get('target_token'), 'weakness')
     number = validate_number(target['number'])
-    save_result(number, success_count, mode='normal')
+    save_authenticated_result(number, success_count, mode='normal')
     advance_weakness_rotation(str(number))
     return redirect(url_for('weakness_practice'))
 
@@ -113,7 +125,7 @@ def cricket_success():
     if number not in CRICKET_NUMBERS:
         abort(400)
 
-    save_result(number, success_count, mode='cricket')
+    save_authenticated_result(number, success_count, mode='cricket')
     return redirect(url_for('cricket_page'))
 
 
@@ -132,7 +144,7 @@ def success():
     success_count = validate_success_count(request.form.get('count', type=int))
     target = consume_pending_target(request.form.get('target_token'), 'normal')
     number = validate_number(target['number'])
-    save_result(number, success_count, mode='normal')
+    save_authenticated_result(number, success_count, mode='normal')
     return redirect(url_for('next_page'))
 
 @app.route('/Advanced')
@@ -157,7 +169,7 @@ def advanced_success():
     if bed not in {'Single', 'Double', 'Triple', 'Outer', 'Inner'}:
         abort(400)
 
-    save_result(number, success_count, mode='advanced', bed=bed)
+    save_authenticated_result(number, success_count, mode='advanced', bed=bed)
     return redirect(url_for('advanced_page'))
 
 
@@ -247,8 +259,8 @@ def rank_weak_numbers(number_stats):
     )[:WORST_NUMBER_LIMIT]
 
 
-def get_weakness_analysis():
-    all_results = get_results()
+def get_weakness_analysis(user_id=None):
+    all_results = get_results(user_id=user_id) if user_id is not None else []
     total_throws = len(all_results) * 3
     number_stats = summarize_by_number(all_results)
     weak_numbers = (
@@ -290,3 +302,26 @@ def advance_weakness_rotation(completed_number):
     if rotation_numbers[index] == completed_number:
         rotation['index'] = (index + 1) % len(rotation_numbers)
         session['weakness_rotation'] = rotation
+
+
+def save_authenticated_result(number, success_count, mode, bed=None):
+    if g.user is None:
+        return None
+    return save_result(
+        number,
+        success_count,
+        mode,
+        bed=bed,
+        user_id=g.user['id'],
+    )
+
+
+def get_current_week_start_utc():
+    now_jst = datetime.now(ZoneInfo('Asia/Tokyo'))
+    week_start_jst = (now_jst - timedelta(days=now_jst.weekday())).replace(
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0,
+    )
+    return week_start_jst.astimezone(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')

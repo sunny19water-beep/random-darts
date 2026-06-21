@@ -21,6 +21,12 @@
             </nav>
         </header>
 
+        {% if not g.user %}
+            <div class="login-notice">
+                個人記録を残すには<a href="{{ url_for('auth.auth_page') }}">認証・ログイン</a>してください。
+            </div>
+        {% endif %}
+
         <form class="range-selector" method="GET" action="{{ url_for('result') }}">
             <label for="result-range">集計する直近ラウンド数</label>
             <select id="result-range" name="range" onchange="this.form.submit()">
@@ -79,6 +85,52 @@
             {% else %}
                 <p class="empty-message">分析できる記録がありません。</p>
             {% endif %}
+        </section>
+
+        <section class="rankings-section" aria-label="成功率ランキング">
+            <article class="ranking-card">
+                <div class="ranking-heading">
+                    <p class="section-label">This Week</p>
+                    <h2>今週のランキング</h2>
+                    <span>日本時間・月曜更新</span>
+                </div>
+                {% if weekly_rankings %}
+                    <ol class="ranking-list">
+                        {% for ranking in weekly_rankings %}
+                            <li class="{% if g.user and ranking.user_id == g.user.id %}current-user{% endif %}">
+                                <span class="rank">{{ loop.index }}</span>
+                                <strong>{{ ranking.username }}</strong>
+                                <span>{{ ranking.success_rate }}%</span>
+                                <small>{{ ranking.total_throws }}投</small>
+                            </li>
+                        {% endfor %}
+                    </ol>
+                {% else %}
+                    <p class="empty-message">今週の記録はまだありません。</p>
+                {% endif %}
+            </article>
+
+            <article class="ranking-card">
+                <div class="ranking-heading">
+                    <p class="section-label">All Time</p>
+                    <h2>歴代ランキング</h2>
+                    <span>全期間の成功率</span>
+                </div>
+                {% if all_time_rankings %}
+                    <ol class="ranking-list">
+                        {% for ranking in all_time_rankings %}
+                            <li class="{% if g.user and ranking.user_id == g.user.id %}current-user{% endif %}">
+                                <span class="rank">{{ loop.index }}</span>
+                                <strong>{{ ranking.username }}</strong>
+                                <span>{{ ranking.success_rate }}%</span>
+                                <small>{{ ranking.total_throws }}投</small>
+                            </li>
+                        {% endfor %}
+                    </ol>
+                {% else %}
+                    <p class="empty-message">ランキング対象の記録がありません。</p>
+                {% endif %}
+            </article>
         </section>
 
         <section class="charts-grid">

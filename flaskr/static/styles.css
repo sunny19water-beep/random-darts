@@ -59,6 +59,25 @@ p {
     text-decoration: none;
 }
 
+.auth-note {
+    margin-top: 8px;
+    color: #ddd;
+    font-size: 13px;
+}
+
+.account-panel {
+    margin-top: 22px;
+}
+
+.account-panel span {
+    display: block;
+    color: #c9a227;
+}
+
+.account-button {
+    margin-top: 10px;
+}
+
 /* 右下に固定 */
 .how {
     position: fixed;

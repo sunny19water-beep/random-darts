@@ -93,10 +93,25 @@ nav a,
 
 .summary-card,
 .weakness-panel,
-.chart-card {
+.chart-card,
+.ranking-card {
     background: #141414;
     border: 1px solid #292929;
     border-radius: 12px;
+}
+
+.login-notice {
+    margin-top: 24px;
+    padding: 14px 18px;
+    background: #211d0d;
+    border: 1px solid #6f5d16;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.login-notice a {
+    margin: 0 5px;
+    color: #c9a227;
 }
 
 .summary-card {
@@ -173,6 +188,52 @@ nav a,
     margin-top: 14px;
 }
 
+.rankings-section {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 14px;
+}
+
+.ranking-card {
+    padding: 22px;
+}
+
+.ranking-heading > span {
+    display: block;
+    margin-top: 6px;
+    color: #888;
+    font-size: 12px;
+}
+
+.ranking-list {
+    margin: 20px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ranking-list li {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 8px;
+    border-top: 1px solid #292929;
+}
+
+.ranking-list li.current-user {
+    background: rgba(201, 162, 39, 0.12);
+}
+
+.ranking-list .rank {
+    color: #c9a227;
+    font-weight: bold;
+}
+
+.ranking-list small {
+    color: #888;
+}
+
 .chart-card {
     min-width: 0;
     padding: 22px;
@@ -217,7 +278,8 @@ nav a:focus-visible,
     }
 
     .summary-grid,
-    .charts-grid {
+    .charts-grid,
+    .rankings-section {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
@@ -232,7 +294,8 @@ nav a:focus-visible,
 
 @media (max-width: 460px) {
     .summary-grid,
-    .charts-grid {
+    .charts-grid,
+    .rankings-section {
         grid-template-columns: 1fr;
     }
 

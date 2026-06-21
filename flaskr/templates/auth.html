@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>認証・ログイン</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='sanitize.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='auth.css') }}">
+</head>
+<body>
+    <main class="auth-page">
+        <header>
+            <p>Random Darts Account</p>
+            <h1>記録を残して、上達を追いかけよう。</h1>
+            <a href="{{ url_for('index') }}">トップページへ戻る</a>
+        </header>
+
+        {% if error %}
+            <div class="error-message" role="alert">{{ error }}</div>
+        {% endif %}
+
+        <div class="auth-grid">
+            <section class="auth-card {% if active_form == 'register' %}active{% endif %}">
+                <h2>アカウント登録</h2>
+                <p>メールアドレス、ユーザー名、パスワードを設定します。</p>
+                <form action="{{ url_for('auth.register') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <label for="register-email">メールアドレス</label>
+                    <input id="register-email" name="email" type="email" value="{{ email or '' }}" autocomplete="email" required>
+                    <label for="username">ユーザー名</label>
+                    <input id="username" name="username" type="text" value="{{ username or '' }}" minlength="2" maxlength="30" autocomplete="username" required>
+                    <label for="register-password">パスワード</label>
+                    <input id="register-password" name="password" type="password" minlength="8" autocomplete="new-password" required>
+                    <button type="submit">登録する</button>
+                </form>
+            </section>
+
+            <section class="auth-card {% if active_form == 'login' %}active{% endif %}">
+                <h2>ログイン</h2>
+                <p>登録したメールアドレスとパスワードでログインします。</p>
+                <form action="{{ url_for('auth.login') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <label for="login-email">メールアドレス</label>
+                    <input id="login-email" name="email" type="email" value="{{ login_email or '' }}" autocomplete="email" required>
+                    <label for="login-password">パスワード</label>
+                    <input id="login-password" name="password" type="password" autocomplete="current-password" required>
+                    <button type="submit">ログイン</button>
+                </form>
+            </section>
+        </div>
+    </main>
+</body>
+</html>

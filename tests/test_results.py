@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 from flaskr import app, get_weakness_analysis
 from flaskr.app import CRICKET_NUMBERS, draw_cricket_number
-from flaskr.db import ensure_schema, get_db, save_result
+from flaskr.db import create_user, ensure_schema, get_db, save_result
 
 
 class ResultSecurityTestCase(unittest.TestCase):
@@ -21,7 +21,14 @@ class ResultSecurityTestCase(unittest.TestCase):
         )
         with app.app_context():
             ensure_schema()
+            self.user_id = create_user(
+                'player@example.com',
+                'player',
+                'test-password-hash',
+            )
         self.client = app.test_client()
+        with self.client.session_transaction() as session:
+            session['user_id'] = self.user_id
 
     def tearDown(self):
         self.temp_directory.cleanup()
@@ -57,6 +64,12 @@ class ResultSecurityTestCase(unittest.TestCase):
                 'SELECT number, success_count FROM throw_results'
             ).fetchone()
         self.assertEqual(tuple(result), ('20', 2))
+        with app.app_context():
+            linked_results = get_db().execute(
+                'SELECT COUNT(*) FROM user_results WHERE user_id = ?',
+                (self.user_id,),
+            ).fetchone()[0]
+        self.assertEqual(linked_results, 1)
 
         replay = self.client.post(
             '/success',
@@ -149,10 +162,10 @@ class ResultSecurityTestCase(unittest.TestCase):
                 remaining_successes = number - 1
                 for _ in range(3):
                     successes = min(3, remaining_successes)
-                    save_result(number, successes, 'normal')
+                    save_result(number, successes, 'normal', user_id=self.user_id)
                     remaining_successes -= successes
 
-            analysis = get_weakness_analysis()
+            analysis = get_weakness_analysis(self.user_id)
 
         weak_numbers = [stat['number'] for stat in analysis['weak_numbers']]
         self.assertEqual(weak_numbers, [str(number) for number in range(1, 8)])
@@ -165,9 +178,9 @@ class ResultSecurityTestCase(unittest.TestCase):
     def test_weakness_practice_targets_and_saves_weak_number(self):
         with app.app_context():
             for _ in range(16):
-                save_result(1, 1, 'normal')
+                save_result(1, 1, 'normal', user_id=self.user_id)
             for _ in range(3):
-                save_result(20, 0, 'normal')
+                save_result(20, 0, 'normal', user_id=self.user_id)
 
         page = self.client.get('/weakness').get_data(as_text=True)
         self.assertIn('苦手ナンバーを練習しましょう', page)

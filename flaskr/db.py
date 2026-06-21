@@ -10,6 +10,7 @@ def get_db():
             current_app.config['DATABASE'],
         )
         g.db.row_factory = sqlite3.Row
+        g.db.execute('PRAGMA foreign_keys = ON')
 
     return g.db
 
@@ -50,6 +51,8 @@ def ensure_schema():
 
 def init_db():
     db = get_db()
+    db.execute('DROP TABLE IF EXISTS user_results')
+    db.execute('DROP TABLE IF EXISTS users')
     db.execute('DROP TABLE IF EXISTS throw_results')
     ensure_schema()
 
@@ -63,7 +66,7 @@ def init_db_command():
 
 def save_result(number, success_count, mode, bed=None, user_id=None):
     db = get_db()
-    db.execute(
+    cursor = db.execute(
         '''
         INSERT INTO throw_results
             (user_id, number, success_count, mode, bed)
@@ -71,25 +74,97 @@ def save_result(number, success_count, mode, bed=None, user_id=None):
         ''',
         (user_id, str(number), success_count, mode, bed),
     )
+    if user_id is not None:
+        db.execute(
+            'INSERT INTO user_results (user_id, result_id) VALUES (?, ?)',
+            (user_id, cursor.lastrowid),
+        )
     db.commit()
+    return cursor.lastrowid
 
 
-def get_results(limit=None):
+def get_results(limit=None, user_id=None):
     db = get_db()
+    if user_id is not None:
+        base_query = '''
+            SELECT throw_results.*
+            FROM throw_results
+            JOIN user_results ON user_results.result_id = throw_results.id
+            WHERE user_results.user_id = ?
+        '''
+        parameters = (user_id,)
+    else:
+        base_query = 'SELECT * FROM throw_results'
+        parameters = ()
+
     if limit is None:
-        return db.execute(
-            'SELECT * FROM throw_results ORDER BY id'
-        ).fetchall()
+        return db.execute(f'{base_query} ORDER BY throw_results.id', parameters).fetchall()
 
     return db.execute(
-        '''
+        f'''
         SELECT *
         FROM (
-            SELECT * FROM throw_results ORDER BY id DESC LIMIT ?
+            {base_query} ORDER BY throw_results.id DESC LIMIT ?
         )
         ORDER BY id
         ''',
-        (limit,),
+        (*parameters, limit),
+    ).fetchall()
+
+
+def create_user(email, username, password_hash):
+    db = get_db()
+    cursor = db.execute(
+        'INSERT INTO users (email, username, password_hash) VALUES (?, ?, ?)',
+        (email, username, password_hash),
+    )
+    db.commit()
+    return cursor.lastrowid
+
+
+def get_user_by_email(email):
+    return get_db().execute(
+        'SELECT * FROM users WHERE email = ? COLLATE NOCASE',
+        (email,),
+    ).fetchone()
+
+
+def get_user_by_id(user_id):
+    return get_db().execute(
+        'SELECT id, email, username, created_at FROM users WHERE id = ?',
+        (user_id,),
+    ).fetchone()
+
+
+def get_rankings(since=None, limit=10):
+    parameters = []
+    date_filter = ''
+    if since is not None:
+        date_filter = 'WHERE throw_results.created_at >= ?'
+        parameters.append(since)
+
+    parameters.append(limit)
+    return get_db().execute(
+        f'''
+        SELECT
+            users.id AS user_id,
+            users.username,
+            COUNT(throw_results.id) * 3 AS total_throws,
+            SUM(throw_results.success_count) AS successes,
+            ROUND(
+                SUM(throw_results.success_count) * 100.0
+                / (COUNT(throw_results.id) * 3),
+                1
+            ) AS success_rate
+        FROM users
+        JOIN user_results ON user_results.user_id = users.id
+        JOIN throw_results ON throw_results.id = user_results.result_id
+        {date_filter}
+        GROUP BY users.id, users.username
+        ORDER BY success_rate DESC, total_throws DESC, users.id
+        LIMIT ?
+        ''',
+        parameters,
     ).fetchall()
 
 
