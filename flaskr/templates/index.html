@@ -10,27 +10,32 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h1>ランダムダーツ</h1>
-    <p>
-        ダーツ練習アプリです<br>
-        このアプリの使い方、説明は以下のボタンから確認できます
-    </p>
-    <br>
-
-    <nav class="menu" aria-label="メインメニュー">
-        <a class="menu-button" href="{{ url_for('about') }}">このアプリについて</a>
+    <header class="top-bar">
+        <a class="utility-button about-button" href="{{ url_for('about') }}">このアプリについて</a>
         {% if g.user %}
             <div class="account-panel">
                 <span>{{ g.user.username }} でログイン中</span>
                 <form action="{{ url_for('auth.logout') }}" method="POST">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                    <button class="menu-button account-button" type="submit">ログアウト</button>
+                    <button class="utility-button logout-button" type="submit">ログアウト</button>
                 </form>
             </div>
         {% else %}
-            <a class="menu-button" href="{{ url_for('auth.auth_page') }}">認証・ログイン</a>
-            <span class="auth-note">認証すると結果が残ります</span>
+            <div class="auth-panel">
+                <a class="utility-button auth-button" href="{{ url_for('auth.auth_page') }}">認証・ログイン</a>
+                <span class="auth-note">認証すると結果が残ります</span>
+            </div>
         {% endif %}
+    </header>
+
+    <h1>ランダムダーツ</h1>
+    <p>
+        ダーツ練習アプリです<br>
+        アプリの説明と認証は画面上部から確認できます
+    </p>
+    <br>
+
+    <nav class="menu" aria-label="メインメニュー">
         <a class="menu-button" href="{{ url_for('next_page') }}">Normal mode</a>
         <a class="menu-button" href="{{ url_for('advanced_page') }}">Advanced mode</a>
         <a class="menu-button" href="{{ url_for('cricket_page') }}">Cricket mode</a>
