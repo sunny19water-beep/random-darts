@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>苦手ナンバー練習</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='secondstyle.css') }}">
+</head>
+<body class="{% if target_number == 'bull' %}bull-mode{% endif %}">
+    <nav class="practice-nav" aria-label="ページ移動">
+        <a href="{{ url_for('result') }}">結果を見る</a>
+        <a href="{{ url_for('index') }}">トップへ</a>
+    </nav>
+
+    {% if target_number is not none %}
+        <div class="content">
+            <p class="practice-label">Weak Number Practice</p>
+            <h1>
+                苦手ナンバーを練習しましょう<br>
+                <strong class="{% if target_number == 'bull' %}bull-text{% endif %}">
+                    {{ target_number }}
+                </strong>
+                を狙ってください！
+            </h1>
+        </div>
+
+        <div class="form">
+            <form action="{{ url_for('weakness_success') }}" method="POST">
+                <input type="hidden" name="target_token" value="{{ target_token }}">
+                <div class="selection">
+                    <label for="weakness-count">3投中の成功回数</label>
+                    <select id="weakness-count" name="count" required>
+                        <option value="" selected disabled>成功回数を選択！</option>
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                    </select>
+                </div>
+                <div class="bottom-button">
+                    <button type="submit" class="btn btn-primary">Next Round</button>
+                </div>
+            </form>
+        </div>
+    {% else %}
+        <div class="content practice-empty">
+            <p class="practice-label">Weak Number Practice</p>
+            <h1>苦手ナンバーを分析中です</h1>
+            {% if total_throws < min_total_throws %}
+                <p>あと {{ throws_until_analysis }} 本記録すると分析を始められます。</p>
+            {% else %}
+                <p>同じナンバーを最低 {{ min_throws_per_number }} 投記録すると練習を始められます。</p>
+            {% endif %}
+        </div>
+    {% endif %}
+</body>
+</html>

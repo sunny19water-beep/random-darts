@@ -74,6 +74,31 @@ strong {
     color: white;
 }
 
+.practice-nav {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    gap: 16px;
+}
+
+.practice-nav a {
+    color: white;
+}
+
+.practice-label {
+    color: #ff7300;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.practice-empty p:last-child {
+    margin-top: 24px;
+    line-height: 1.8;
+}
+
 .selection{
     font-size: 18px;
     padding: 40px;

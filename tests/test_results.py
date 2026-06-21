@@ -96,6 +96,35 @@ class ResultSecurityTestCase(unittest.TestCase):
         page = self.client.get('/result?range=all').get_data(as_text=True)
         self.assertIn('成功率 0.0%（9投）', page)
 
+    def test_weakness_practice_requires_enough_data(self):
+        page = self.client.get('/weakness').get_data(as_text=True)
+        self.assertIn('あと 50 本', page)
+        self.assertNotIn('name="target_token"', page)
+
+    def test_weakness_practice_targets_and_saves_weak_number(self):
+        with app.app_context():
+            for _ in range(16):
+                save_result(1, 1, 'normal')
+            for _ in range(3):
+                save_result(20, 0, 'normal')
+
+        page = self.client.get('/weakness').get_data(as_text=True)
+        self.assertIn('苦手ナンバーを練習しましょう', page)
+        self.assertIn('20', page)
+        token = self.extract_token(page)
+
+        response = self.client.post(
+            '/weakness/success',
+            data={'target_token': token, 'number': '1', 'count': '2'},
+        )
+        self.assertEqual(response.status_code, 302)
+
+        with app.app_context():
+            result = get_db().execute(
+                'SELECT number, success_count FROM throw_results ORDER BY id DESC LIMIT 1'
+            ).fetchone()
+        self.assertEqual(tuple(result), ('20', 2))
+
 
 if __name__ == '__main__':
     unittest.main()

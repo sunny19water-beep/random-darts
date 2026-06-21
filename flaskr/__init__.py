@@ -34,20 +34,9 @@ def result():
         selected_range = '10'
 
     results = get_results(RESULT_RANGES[selected_range])
-    all_results = get_results()
     summary = summarize_results(results)
     number_stats = summarize_by_number(results)
-    all_number_stats = summarize_by_number(all_results)
-    total_throws = len(all_results) * 3
-    eligible_number_stats = [
-        stat for stat in all_number_stats
-        if stat['throws'] >= MIN_THROWS_PER_NUMBER
-    ]
-    weak_numbers = (
-        find_weak_numbers(eligible_number_stats)
-        if total_throws >= MIN_TOTAL_THROWS_FOR_ANALYSIS
-        else []
-    )
+    weakness = get_weakness_analysis()
 
     chart_data = {
         'numbers': {
@@ -64,13 +53,47 @@ def result():
         'result.html',
         selected_range=selected_range,
         summary=summary,
-        weak_numbers=weak_numbers,
-        total_throws=total_throws,
+        weak_numbers=weakness['weak_numbers'],
+        total_throws=weakness['total_throws'],
         min_total_throws=MIN_TOTAL_THROWS_FOR_ANALYSIS,
         min_throws_per_number=MIN_THROWS_PER_NUMBER,
-        throws_until_analysis=max(0, MIN_TOTAL_THROWS_FOR_ANALYSIS - total_throws),
+        throws_until_analysis=weakness['throws_until_analysis'],
         chart_data=chart_data,
     )
+
+
+@app.route('/weakness')
+def weakness_practice():
+    weakness = get_weakness_analysis()
+    if not weakness['weak_numbers']:
+        return render_template(
+            'weakness.html',
+            target_number=None,
+            total_throws=weakness['total_throws'],
+            throws_until_analysis=weakness['throws_until_analysis'],
+            min_total_throws=MIN_TOTAL_THROWS_FOR_ANALYSIS,
+            min_throws_per_number=MIN_THROWS_PER_NUMBER,
+        )
+
+    target_number = secrets.choice(weakness['weak_numbers'])['number']
+    target_token = create_pending_target('weakness', target_number)
+    return render_template(
+        'weakness.html',
+        target_number=target_number,
+        target_token=target_token,
+        total_throws=weakness['total_throws'],
+        min_total_throws=MIN_TOTAL_THROWS_FOR_ANALYSIS,
+        min_throws_per_number=MIN_THROWS_PER_NUMBER,
+    )
+
+
+@app.post('/weakness/success')
+def weakness_success():
+    success_count = validate_success_count(request.form.get('count', type=int))
+    target = consume_pending_target(request.form.get('target_token'), 'weakness')
+    number = validate_number(target['number'])
+    save_result(number, success_count, mode='normal')
+    return redirect(url_for('weakness_practice'))
 
 
 @app.route('/next')
@@ -201,3 +224,26 @@ def find_weak_numbers(number_stats):
         return []
     lowest_rate = min(stat['success_rate'] for stat in number_stats)
     return [stat for stat in number_stats if stat['success_rate'] == lowest_rate]
+
+
+def get_weakness_analysis():
+    all_results = get_results()
+    total_throws = len(all_results) * 3
+    number_stats = summarize_by_number(all_results)
+    eligible_number_stats = [
+        stat for stat in number_stats
+        if stat['throws'] >= MIN_THROWS_PER_NUMBER
+    ]
+    weak_numbers = (
+        find_weak_numbers(eligible_number_stats)
+        if total_throws >= MIN_TOTAL_THROWS_FOR_ANALYSIS
+        else []
+    )
+    return {
+        'total_throws': total_throws,
+        'throws_until_analysis': max(
+            0,
+            MIN_TOTAL_THROWS_FOR_ANALYSIS - total_throws,
+        ),
+        'weak_numbers': weak_numbers,
+    }
