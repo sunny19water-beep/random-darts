@@ -1,0 +1,101 @@
+import os
+import re
+import tempfile
+import unittest
+from unittest.mock import patch
+
+from flaskr import app
+from flaskr.db import ensure_schema, get_db, save_result
+
+
+class ResultSecurityTestCase(unittest.TestCase):
+    def setUp(self):
+        self.temp_directory = tempfile.TemporaryDirectory()
+        database_path = os.path.join(self.temp_directory.name, 'test.sqlite')
+        app.config.update(
+            DATABASE=database_path,
+            SECRET_KEY='test-secret',
+            TESTING=True,
+        )
+        with app.app_context():
+            ensure_schema()
+        self.client = app.test_client()
+
+    def tearDown(self):
+        self.temp_directory.cleanup()
+
+    @staticmethod
+    def extract_token(html):
+        match = re.search(r'name="target_token" value="([^"]+)"', html)
+        if match is None:
+            raise AssertionError('target token was not rendered')
+        return match.group(1)
+
+    def test_normal_target_cannot_be_changed_or_replayed(self):
+        with patch('flaskr.draw_number', return_value=20):
+            html = self.client.get('/next').get_data(as_text=True)
+
+        self.assertNotIn('name="number"', html)
+        token = self.extract_token(html)
+        response = self.client.post(
+            '/success',
+            data={'target_token': token, 'number': '1', 'count': '2'},
+        )
+        self.assertEqual(response.status_code, 302)
+
+        with app.app_context():
+            result = get_db().execute(
+                'SELECT number, success_count FROM throw_results'
+            ).fetchone()
+        self.assertEqual(tuple(result), ('20', 2))
+
+        replay = self.client.post(
+            '/success',
+            data={'target_token': token, 'count': '2'},
+        )
+        self.assertEqual(replay.status_code, 400)
+
+    def test_advanced_target_uses_server_values(self):
+        with patch('flaskr.draw_advanced_numbers', return_value=(18, 'Triple')):
+            html = self.client.get('/advanced').get_data(as_text=True)
+
+        self.assertNotIn('name="number"', html)
+        self.assertNotIn('name="bed"', html)
+        token = self.extract_token(html)
+        response = self.client.post(
+            '/advanced/success',
+            data={
+                'target_token': token,
+                'number': '1',
+                'bed': 'Single',
+                'count': '1',
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+
+        with app.app_context():
+            result = get_db().execute(
+                'SELECT number, bed, success_count FROM throw_results'
+            ).fetchone()
+        self.assertEqual(tuple(result), ('18', 'Triple', 1))
+
+    def test_weak_number_requires_nine_throws_for_that_number(self):
+        with app.app_context():
+            for _ in range(16):
+                save_result(1, 1, 'normal')
+            save_result(20, 0, 'normal')
+
+        page = self.client.get('/result?range=all').get_data(as_text=True)
+        self.assertIn('成功率 33.3%（48投）', page)
+        self.assertNotIn('成功率 0.0%（3投）', page)
+
+        with app.app_context():
+            save_result(20, 0, 'normal')
+            save_result(20, 0, 'normal')
+
+        page = self.client.get('/result?range=all').get_data(as_text=True)
+        self.assertIn('成功率 0.0%（9投）', page)
+
+
+if __name__ == '__main__':
+    unittest.main()

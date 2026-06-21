@@ -26,7 +26,7 @@
 
     <div class="form">
     <form action="{{ url_for('success') }}" method="POST">
-        <input type="hidden" name="number" value="{{ random_number }}">
+        <input type="hidden" name="target_token" value="{{ target_token }}">
         <div class="selection">
         <label for="normal-count">3投中の成功回数</label>
         <select id="normal-count" name="count" required>

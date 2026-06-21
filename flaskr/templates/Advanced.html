@@ -28,8 +28,7 @@
     </div>
 
     <form action="{{ url_for('advanced_success') }}" method="POST">
-        <input type="hidden" name="number" value="{{ random_number }}">
-        <input type="hidden" name="bed" value="{{ bed_number }}">
+        <input type="hidden" name="target_token" value="{{ target_token }}">
         <div class="selection">
         <label for="advanced-count">3投中の成功回数</label>
         <select id="advanced-count" name="count" required>

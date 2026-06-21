@@ -8,7 +8,6 @@ def get_db():
     if 'db' not in g:
         g.db = sqlite3.connect(
             current_app.config['DATABASE'],
-            detect_types=sqlite3.PARSE_DECLTYPES,
         )
         g.db.row_factory = sqlite3.Row
 
@@ -52,6 +51,25 @@ def save_result(number, success_count, mode, bed=None, user_id=None):
         (user_id, str(number), success_count, mode, bed),
     )
     db.commit()
+
+
+def get_results(limit=None):
+    db = get_db()
+    if limit is None:
+        return db.execute(
+            'SELECT * FROM throw_results ORDER BY id'
+        ).fetchall()
+
+    return db.execute(
+        '''
+        SELECT *
+        FROM (
+            SELECT * FROM throw_results ORDER BY id DESC LIMIT ?
+        )
+        ORDER BY id
+        ''',
+        (limit,),
+    ).fetchall()
 
 
 def init_app(app):

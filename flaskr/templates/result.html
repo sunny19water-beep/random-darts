@@ -4,8 +4,202 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>練習結果</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='sanitize.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='result.css') }}">
 </head>
 <body>
-    <main></main>
+    <main class="result-page">
+        <header class="page-header">
+            <div>
+                <p class="eyebrow">Practice Analytics</p>
+                <h1>練習結果</h1>
+            </div>
+            <nav aria-label="練習画面へ戻る">
+                <a href="{{ url_for('next_page') }}">Normal</a>
+                <a href="{{ url_for('advanced_page') }}">Advanced</a>
+            </nav>
+        </header>
+
+        <form class="range-selector" method="GET" action="{{ url_for('result') }}">
+            <label for="result-range">集計する直近ラウンド数</label>
+            <select id="result-range" name="range" onchange="this.form.submit()">
+                <option value="3" {% if selected_range == '3' %}selected{% endif %}>3</option>
+                <option value="10" {% if selected_range == '10' %}selected{% endif %}>10</option>
+                <option value="50" {% if selected_range == '50' %}selected{% endif %}>50</option>
+                <option value="100" {% if selected_range == '100' %}selected{% endif %}>100</option>
+                <option value="all" {% if selected_range == 'all' %}selected{% endif %}>All</option>
+            </select>
+            <noscript><button type="submit">集計する</button></noscript>
+        </form>
+
+        <section class="summary-grid" aria-label="成功率の概要">
+            <article class="summary-card primary">
+                <p>平均成功率</p>
+                <strong>
+                    {% if summary.success_rate is not none %}
+                        {{ summary.success_rate }}<span>%</span>
+                    {% else %}
+                        --<span>%</span>
+                    {% endif %}
+                </strong>
+            </article>
+            <article class="summary-card">
+                <p>成功本数</p>
+                <strong>{{ summary.successes }}<span>本</span></strong>
+            </article>
+            <article class="summary-card">
+                <p>投げた本数</p>
+                <strong>{{ summary.total_throws }}<span>本</span></strong>
+            </article>
+            <article class="summary-card">
+                <p>記録ラウンド</p>
+                <strong>{{ summary.rounds }}<span>R</span></strong>
+            </article>
+        </section>
+
+        <section class="weakness-panel">
+            <div>
+                <p class="section-label">Weak Number</p>
+                <h2>苦手ナンバー分析</h2>
+            </div>
+            {% if total_throws < min_total_throws %}
+                <p class="empty-message">
+                    あと <strong>{{ throws_until_analysis }}</strong> 本記録すると分析を表示します。
+                </p>
+            {% elif weak_numbers %}
+                <div class="weak-number-list">
+                    {% for stat in weak_numbers %}
+                        <article>
+                            <strong>{{ stat.number }}</strong>
+                            <span>成功率 {{ stat.success_rate }}%（{{ stat.throws }}投）</span>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="empty-message">
+                    同じナンバーを最低 <strong>{{ min_throws_per_number }}</strong> 投記録すると分析を表示します。
+                </p>
+            {% endif %}
+        </section>
+
+        <section class="charts-grid">
+            <article class="chart-card">
+                <h2>ナンバー別成功率</h2>
+                <div class="chart-scroll">
+                    <canvas id="number-chart" height="320" role="img" aria-label="ナンバー別成功率の棒グラフ"></canvas>
+                </div>
+            </article>
+            <article class="chart-card">
+                <h2>ラウンドごとの推移</h2>
+                <div class="chart-scroll">
+                    <canvas id="trend-chart" height="320" role="img" aria-label="成功率推移の折れ線グラフ"></canvas>
+                </div>
+            </article>
+        </section>
+
+        <a class="home-link" href="{{ url_for('index') }}">トップページへ戻る</a>
+    </main>
+
+    <script>
+        const chartData = {{ chart_data | tojson }};
+
+        function prepareCanvas(canvas, itemCount) {
+            const ratio = window.devicePixelRatio || 1;
+            const contentWidth = Math.min(itemCount * 54, 12000);
+            const width = Math.max(canvas.parentElement.clientWidth, contentWidth, 320);
+            const height = 320;
+            canvas.style.width = `${width}px`;
+            canvas.style.height = `${height}px`;
+            canvas.width = width * ratio;
+            canvas.height = height * ratio;
+            const context = canvas.getContext('2d');
+            context.scale(ratio, ratio);
+            return { context, width, height };
+        }
+
+        function drawEmpty(context, width, height) {
+            context.fillStyle = '#8d8d8d';
+            context.font = '16px sans-serif';
+            context.textAlign = 'center';
+            context.fillText('まだ記録がありません', width / 2, height / 2);
+        }
+
+        function drawAxes(context, width, height, padding) {
+            context.strokeStyle = '#444';
+            context.lineWidth = 1;
+            context.font = '12px sans-serif';
+            context.fillStyle = '#aaa';
+            context.textAlign = 'right';
+            for (let rate = 0; rate <= 100; rate += 25) {
+                const y = height - padding.bottom - (rate / 100) * (height - padding.top - padding.bottom);
+                context.beginPath();
+                context.moveTo(padding.left, y);
+                context.lineTo(width - padding.right, y);
+                context.stroke();
+                context.fillText(`${rate}%`, padding.left - 8, y + 4);
+            }
+        }
+
+        function drawBarChart() {
+            const canvas = document.getElementById('number-chart');
+            const labels = chartData.numbers.labels;
+            const rates = chartData.numbers.rates;
+            const { context, width, height } = prepareCanvas(canvas, labels.length);
+            if (!labels.length) return drawEmpty(context, width, height);
+
+            const padding = { top: 20, right: 20, bottom: 42, left: 48 };
+            drawAxes(context, width, height, padding);
+            const plotWidth = width - padding.left - padding.right;
+            const slotWidth = plotWidth / labels.length;
+            rates.forEach((rate, index) => {
+                const barHeight = rate / 100 * (height - padding.top - padding.bottom);
+                const x = padding.left + index * slotWidth + slotWidth * 0.2;
+                const y = height - padding.bottom - barHeight;
+                context.fillStyle = '#c9a227';
+                context.fillRect(x, y, slotWidth * 0.6, barHeight);
+                context.fillStyle = '#e5e5e5';
+                context.textAlign = 'center';
+                context.fillText(labels[index], x + slotWidth * 0.3, height - 18);
+            });
+        }
+
+        function drawTrendChart() {
+            const canvas = document.getElementById('trend-chart');
+            const labels = chartData.trend.labels;
+            const rates = chartData.trend.rates;
+            const { context, width, height } = prepareCanvas(canvas, labels.length);
+            if (!labels.length) return drawEmpty(context, width, height);
+
+            const padding = { top: 20, right: 24, bottom: 42, left: 48 };
+            drawAxes(context, width, height, padding);
+            const plotWidth = width - padding.left - padding.right;
+            const plotHeight = height - padding.top - padding.bottom;
+            context.strokeStyle = '#ff3b5c';
+            context.fillStyle = '#ff3b5c';
+            context.lineWidth = 3;
+            context.beginPath();
+            rates.forEach((rate, index) => {
+                const x = labels.length === 1
+                    ? padding.left + plotWidth / 2
+                    : padding.left + index / (labels.length - 1) * plotWidth;
+                const y = height - padding.bottom - rate / 100 * plotHeight;
+                if (index === 0) context.moveTo(x, y);
+                else context.lineTo(x, y);
+            });
+            context.stroke();
+            rates.forEach((rate, index) => {
+                const x = labels.length === 1
+                    ? padding.left + plotWidth / 2
+                    : padding.left + index / (labels.length - 1) * plotWidth;
+                const y = height - padding.bottom - rate / 100 * plotHeight;
+                context.beginPath();
+                context.arc(x, y, 4, 0, Math.PI * 2);
+                context.fill();
+            });
+        }
+
+        drawBarChart();
+        drawTrendChart();
+    </script>
 </body>
 </html>
