@@ -1,5 +1,7 @@
 import random
 
+CRICKET_NUMBERS = [15, 16, 17, 18, 19, 20, 'bull']
+
 def draw_number():
     number = random.randint(1, 21)
     if number == 21:
@@ -16,3 +18,7 @@ def draw_advanced_numbers():
 
     bed = random.choice(["Single", "Double", "Triple"])
     return number, bed
+
+
+def draw_cricket_number():
+    return random.choice(CRICKET_NUMBERS)

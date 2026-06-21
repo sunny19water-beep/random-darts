@@ -23,7 +23,28 @@ def close_db(exception=None):
 def ensure_schema():
     db = get_db()
     with current_app.open_resource('schema.sql') as schema_file:
-        db.executescript(schema_file.read().decode('utf-8'))
+        schema = schema_file.read().decode('utf-8')
+
+    table = db.execute(
+        "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'throw_results'"
+    ).fetchone()
+    if table is not None and "'cricket'" not in table['sql']:
+        db.executescript(
+            f'''
+            BEGIN;
+            ALTER TABLE throw_results RENAME TO throw_results_legacy;
+            DROP INDEX IF EXISTS idx_throw_results_user_id;
+            {schema}
+            INSERT INTO throw_results
+                (id, user_id, number, success_count, mode, bed, created_at)
+            SELECT id, user_id, number, success_count, mode, bed, created_at
+            FROM throw_results_legacy;
+            DROP TABLE throw_results_legacy;
+            COMMIT;
+            '''
+        )
+    else:
+        db.executescript(schema)
     db.commit()
 
 

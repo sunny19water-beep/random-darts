@@ -1,10 +1,12 @@
 import os
 import re
+import sqlite3
 import tempfile
 import unittest
 from unittest.mock import patch
 
 from flaskr import app, get_weakness_analysis
+from flaskr.app import CRICKET_NUMBERS, draw_cricket_number
 from flaskr.db import ensure_schema, get_db, save_result
 
 
@@ -85,6 +87,61 @@ class ResultSecurityTestCase(unittest.TestCase):
                 'SELECT number, bed, success_count FROM throw_results'
             ).fetchone()
         self.assertEqual(tuple(result), ('18', 'Triple', 1))
+
+    def test_cricket_targets_and_saves_only_cricket_numbers(self):
+        for _ in range(100):
+            self.assertIn(draw_cricket_number(), CRICKET_NUMBERS)
+
+        with patch('flaskr.draw_cricket_number', return_value=15):
+            html = self.client.get('/cricket').get_data(as_text=True)
+
+        self.assertEqual(self.extract_target_number(html), '15')
+        token = self.extract_token(html)
+        response = self.client.post(
+            '/cricket/success',
+            data={'target_token': token, 'number': '20', 'count': '2'},
+        )
+        self.assertEqual(response.status_code, 302)
+
+        with app.app_context():
+            result = get_db().execute(
+                'SELECT number, success_count, mode FROM throw_results'
+            ).fetchone()
+        self.assertEqual(tuple(result), ('15', 2, 'cricket'))
+
+    def test_existing_database_is_migrated_without_losing_results(self):
+        legacy_database = os.path.join(self.temp_directory.name, 'legacy.sqlite')
+        connection = sqlite3.connect(legacy_database)
+        connection.executescript(
+            '''
+            CREATE TABLE throw_results (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                number TEXT NOT NULL,
+                success_count INTEGER NOT NULL CHECK (success_count BETWEEN 0 AND 3),
+                mode TEXT NOT NULL CHECK (mode IN ('normal', 'advanced')),
+                bed TEXT,
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE INDEX idx_throw_results_user_id ON throw_results (user_id);
+            INSERT INTO throw_results (number, success_count, mode)
+            VALUES ('20', 2, 'normal');
+            '''
+        )
+        connection.close()
+
+        app.config['DATABASE'] = legacy_database
+        with app.app_context():
+            ensure_schema()
+            table_sql = get_db().execute(
+                "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'throw_results'"
+            ).fetchone()['sql']
+            result = get_db().execute(
+                'SELECT number, success_count, mode FROM throw_results'
+            ).fetchone()
+
+        self.assertIn("'cricket'", table_sql)
+        self.assertEqual(tuple(result), ('20', 2, 'normal'))
 
     def test_weak_numbers_are_the_seven_lowest_rates_after_fifty_throws(self):
         with app.app_context():

@@ -94,6 +94,10 @@ strong {
     text-transform: uppercase;
 }
 
+.cricket-label {
+    color: #42d392;
+}
+
 .practice-empty p:last-child {
     margin-top: 24px;
     line-height: 1.8;

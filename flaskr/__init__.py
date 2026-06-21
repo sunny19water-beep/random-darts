@@ -2,7 +2,7 @@ import os
 import secrets
 
 from flask import Flask, abort, redirect, render_template, request, session, url_for
-from .app import draw_advanced_numbers, draw_number
+from .app import CRICKET_NUMBERS, draw_advanced_numbers, draw_cricket_number, draw_number
 from .db import init_app as init_db_app
 from .db import get_results, save_result
 
@@ -92,6 +92,29 @@ def weakness_success():
     save_result(number, success_count, mode='normal')
     advance_weakness_rotation(str(number))
     return redirect(url_for('weakness_practice'))
+
+
+@app.route('/cricket')
+def cricket_page():
+    cricket_number = draw_cricket_number()
+    target_token = create_pending_target('cricket', cricket_number)
+    return render_template(
+        'cricket.html',
+        cricket_number=cricket_number,
+        target_token=target_token,
+    )
+
+
+@app.post('/cricket/success')
+def cricket_success():
+    success_count = validate_success_count(request.form.get('count', type=int))
+    target = consume_pending_target(request.form.get('target_token'), 'cricket')
+    number = validate_number(target['number'])
+    if number not in CRICKET_NUMBERS:
+        abort(400)
+
+    save_result(number, success_count, mode='cricket')
+    return redirect(url_for('cricket_page'))
 
 
 @app.route('/next')
