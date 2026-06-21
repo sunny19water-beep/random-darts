@@ -14,7 +14,7 @@
     </nav>
 
     {% if target_number is not none %}
-        <div class="content">
+        <div class="content" data-target-number="{{ target_number }}">
             <p class="practice-label">Weak Number Practice</p>
             <h1>
                 苦手ナンバーを練習しましょう<br>
@@ -47,11 +47,7 @@
         <div class="content practice-empty">
             <p class="practice-label">Weak Number Practice</p>
             <h1>苦手ナンバーを分析中です</h1>
-            {% if total_throws < min_total_throws %}
-                <p>あと {{ throws_until_analysis }} 本記録すると分析を始められます。</p>
-            {% else %}
-                <p>同じナンバーを最低 {{ min_throws_per_number }} 投記録すると練習を始められます。</p>
-            {% endif %}
+            <p>あと {{ throws_until_analysis }} 本記録すると分析を始められます。</p>
         </div>
     {% endif %}
 </body>

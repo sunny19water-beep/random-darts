@@ -8,7 +8,7 @@ from .db import get_results, save_result
 
 RESULT_RANGES = {'3': 3, '10': 10, '50': 50, '100': 100, 'all': None}
 MIN_TOTAL_THROWS_FOR_ANALYSIS = 50
-MIN_THROWS_PER_NUMBER = 9
+WORST_NUMBER_LIMIT = 7
 MAX_PENDING_TARGETS = 10
 
 app = Flask(__name__)
@@ -56,7 +56,6 @@ def result():
         weak_numbers=weakness['weak_numbers'],
         total_throws=weakness['total_throws'],
         min_total_throws=MIN_TOTAL_THROWS_FOR_ANALYSIS,
-        min_throws_per_number=MIN_THROWS_PER_NUMBER,
         throws_until_analysis=weakness['throws_until_analysis'],
         chart_data=chart_data,
     )
@@ -72,10 +71,9 @@ def weakness_practice():
             total_throws=weakness['total_throws'],
             throws_until_analysis=weakness['throws_until_analysis'],
             min_total_throws=MIN_TOTAL_THROWS_FOR_ANALYSIS,
-            min_throws_per_number=MIN_THROWS_PER_NUMBER,
         )
 
-    target_number = secrets.choice(weakness['weak_numbers'])['number']
+    target_number = select_next_weak_number(weakness['weak_numbers'])
     target_token = create_pending_target('weakness', target_number)
     return render_template(
         'weakness.html',
@@ -83,7 +81,6 @@ def weakness_practice():
         target_token=target_token,
         total_throws=weakness['total_throws'],
         min_total_throws=MIN_TOTAL_THROWS_FOR_ANALYSIS,
-        min_throws_per_number=MIN_THROWS_PER_NUMBER,
     )
 
 
@@ -93,6 +90,7 @@ def weakness_success():
     target = consume_pending_target(request.form.get('target_token'), 'weakness')
     number = validate_number(target['number'])
     save_result(number, success_count, mode='normal')
+    advance_weakness_rotation(str(number))
     return redirect(url_for('weakness_practice'))
 
 
@@ -219,23 +217,19 @@ def number_sort_key(summary):
     return (1, 21) if number == 'bull' else (0, int(number))
 
 
-def find_weak_numbers(number_stats):
-    if not number_stats:
-        return []
-    lowest_rate = min(stat['success_rate'] for stat in number_stats)
-    return [stat for stat in number_stats if stat['success_rate'] == lowest_rate]
+def rank_weak_numbers(number_stats):
+    return sorted(
+        number_stats,
+        key=lambda stat: (stat['success_rate'], -stat['throws'], number_sort_key(stat)),
+    )[:WORST_NUMBER_LIMIT]
 
 
 def get_weakness_analysis():
     all_results = get_results()
     total_throws = len(all_results) * 3
     number_stats = summarize_by_number(all_results)
-    eligible_number_stats = [
-        stat for stat in number_stats
-        if stat['throws'] >= MIN_THROWS_PER_NUMBER
-    ]
     weak_numbers = (
-        find_weak_numbers(eligible_number_stats)
+        rank_weak_numbers(number_stats)
         if total_throws >= MIN_TOTAL_THROWS_FOR_ANALYSIS
         else []
     )
@@ -247,3 +241,29 @@ def get_weakness_analysis():
         ),
         'weak_numbers': weak_numbers,
     }
+
+
+def select_next_weak_number(weak_numbers):
+    ranked_numbers = [str(stat['number']) for stat in weak_numbers]
+    rotation = dict(session.get('weakness_rotation', {}))
+    rotation_numbers = rotation.get('numbers', [])
+
+    if set(rotation_numbers) != set(ranked_numbers):
+        rotation_numbers = ranked_numbers
+        rotation = {'numbers': rotation_numbers, 'index': 0}
+
+    index = rotation.get('index', 0) % len(rotation_numbers)
+    session['weakness_rotation'] = rotation
+    return rotation_numbers[index]
+
+
+def advance_weakness_rotation(completed_number):
+    rotation = dict(session.get('weakness_rotation', {}))
+    rotation_numbers = rotation.get('numbers', [])
+    if not rotation_numbers:
+        return
+
+    index = rotation.get('index', 0) % len(rotation_numbers)
+    if rotation_numbers[index] == completed_number:
+        rotation['index'] = (index + 1) % len(rotation_numbers)
+        session['weakness_rotation'] = rotation

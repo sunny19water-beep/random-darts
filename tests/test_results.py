@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from flaskr import app
+from flaskr import app, get_weakness_analysis
 from flaskr.db import ensure_schema, get_db, save_result
 
 
@@ -29,6 +29,13 @@ class ResultSecurityTestCase(unittest.TestCase):
         match = re.search(r'name="target_token" value="([^"]+)"', html)
         if match is None:
             raise AssertionError('target token was not rendered')
+        return match.group(1)
+
+    @staticmethod
+    def extract_target_number(html):
+        match = re.search(r'data-target-number="([^"]+)"', html)
+        if match is None:
+            raise AssertionError('target number was not rendered')
         return match.group(1)
 
     def test_normal_target_cannot_be_changed_or_replayed(self):
@@ -79,22 +86,19 @@ class ResultSecurityTestCase(unittest.TestCase):
             ).fetchone()
         self.assertEqual(tuple(result), ('18', 'Triple', 1))
 
-    def test_weak_number_requires_nine_throws_for_that_number(self):
+    def test_weak_numbers_are_the_seven_lowest_rates_after_fifty_throws(self):
         with app.app_context():
-            for _ in range(16):
-                save_result(1, 1, 'normal')
-            save_result(20, 0, 'normal')
+            for number in range(1, 9):
+                remaining_successes = number - 1
+                for _ in range(3):
+                    successes = min(3, remaining_successes)
+                    save_result(number, successes, 'normal')
+                    remaining_successes -= successes
 
-        page = self.client.get('/result?range=all').get_data(as_text=True)
-        self.assertIn('成功率 33.3%（48投）', page)
-        self.assertNotIn('成功率 0.0%（3投）', page)
+            analysis = get_weakness_analysis()
 
-        with app.app_context():
-            save_result(20, 0, 'normal')
-            save_result(20, 0, 'normal')
-
-        page = self.client.get('/result?range=all').get_data(as_text=True)
-        self.assertIn('成功率 0.0%（9投）', page)
+        weak_numbers = [stat['number'] for stat in analysis['weak_numbers']]
+        self.assertEqual(weak_numbers, [str(number) for number in range(1, 8)])
 
     def test_weakness_practice_requires_enough_data(self):
         page = self.client.get('/weakness').get_data(as_text=True)
@@ -110,7 +114,7 @@ class ResultSecurityTestCase(unittest.TestCase):
 
         page = self.client.get('/weakness').get_data(as_text=True)
         self.assertIn('苦手ナンバーを練習しましょう', page)
-        self.assertIn('20', page)
+        self.assertEqual(self.extract_target_number(page), '20')
         token = self.extract_token(page)
 
         response = self.client.post(
@@ -124,6 +128,9 @@ class ResultSecurityTestCase(unittest.TestCase):
                 'SELECT number, success_count FROM throw_results ORDER BY id DESC LIMIT 1'
             ).fetchone()
         self.assertEqual(tuple(result), ('20', 2))
+
+        next_page = self.client.get('/weakness').get_data(as_text=True)
+        self.assertEqual(self.extract_target_number(next_page), '1')
 
 
 if __name__ == '__main__':
