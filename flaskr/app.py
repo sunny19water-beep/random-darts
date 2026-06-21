@@ -7,7 +7,7 @@ def draw_number():
     return number
 
 
-def draw_Advanced_numbers():
+def draw_advanced_numbers():
     number = random.randint(1, 21)
 
     if number == 21:

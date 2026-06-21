@@ -100,6 +100,13 @@ strong{
     text-align:center;
 }
 
+.result-link{
+    position:fixed;
+    top:20px;
+    right:20px;
+    color:#c9a227;
+}
+
 .selection label{
     display:block;
     margin-bottom:10px;

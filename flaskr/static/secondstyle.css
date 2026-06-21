@@ -67,6 +67,13 @@ strong {
     color:white;
 }
 
+.result-link {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    color: white;
+}
+
 .selection{
     font-size: 18px;
     padding: 40px;

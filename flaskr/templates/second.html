@@ -11,6 +11,8 @@
 
 <body class="{% if random_number == 'bull' %}bull-mode{% endif %}">
 
+    <a class="result-link" href="{{ url_for('result') }}">結果を見る</a>
+
     
     <div class="content">
         <h1>
@@ -24,6 +26,7 @@
 
     <div class="form">
     <form action="{{ url_for('success') }}" method="POST">
+        <input type="hidden" name="number" value="{{ random_number }}">
         <div class="selection">
         <label for="normal-count">3投中の成功回数</label>
         <select id="normal-count" name="count" required>
